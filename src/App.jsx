@@ -2,7 +2,9 @@
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 // Reemplaza con tu URL de Google Sheets publicado
-const SHEET_URL = "https://opensheet.elk.sh/TU_SHEET_ID/productos";
+ 
+const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/productos";
+
 const ADMIN_EMAIL = "tu@email.com";
 const ADMIN_PASSWORD = "admin2026";
 
