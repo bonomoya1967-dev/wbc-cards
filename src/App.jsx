@@ -183,56 +183,73 @@ export default function App() {
   };
 
   const Navbar = () => (
-    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,8,8,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid " + C.border }}>
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px", height: 64, display: "flex", alignItems: "center", gap: 12 }}>
-        <div onClick={() => setScreen("home")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          <img src={LOGO_URI} alt="WBC Cards F1" style={{ width: 42, height: 42, objectFit: "contain" }} onError={e => { e.target.style.display = "none"; }} />
-          {!isMobile && <div><div style={{ color: C.gold, fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>WBC CARDS F1</div><div style={{ color: "#444", fontSize: 9, letterSpacing: 2 }}>PREMIUM TRADING CARDS</div></div>}
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(6,6,6,0.98)", backdropFilter: "blur(16px)", borderBottom: "1px solid #1a1a1a" }}>
+      {/* Red accent line top */}
+      <div style={{ height: 2, background: "linear-gradient(90deg, " + C.red + " 0%, " + C.gold + " 50%, " + C.red + " 100%)" }} />
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px", height: isMobile ? 56 : 70, display: "flex", alignItems: "center", gap: 16 }}>
+
+        {/* Logo — bigger */}
+        <div onClick={() => setScreen("home")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <img src={LOGO_URI} alt="WBC Cards F1" style={{ width: isMobile ? 44 : 56, height: isMobile ? 44 : 56, objectFit: "contain" }} onError={e => { e.target.style.display = "none"; }} />
+          {!isMobile && (
+            <div>
+              <div style={{ color: C.gold, fontSize: 15, fontWeight: 900, letterSpacing: 3, lineHeight: 1 }}>WBC CARDS F1</div>
+              <div style={{ color: "#444", fontSize: 8, letterSpacing: 3, marginTop: 2 }}>PREMIUM TRADING CARDS</div>
+            </div>
+          )}
         </div>
+
+        {/* SEARCH — dominant, center */}
+        <div style={{ flex: 1, maxWidth: isMobile ? undefined : 520, position: "relative" }}>
+          {(searchOpen || !isMobile) ? (
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#555", fontSize: 16 }}>🔍</span>
+              <input ref={searchRef}
+                style={{ width: "100%", padding: "10px 40px 10px 46px", border: "1px solid #2a2a2a", borderRadius: 8, fontSize: 13, outline: "none", background: "#141414", color: C.white, fontFamily: "inherit", height: 42, transition: "border-color 0.2s" }}
+                placeholder="Search driver, team, year, /10, PSA 10, auto..."
+                value={search}
+                onChange={e => { setSearch(e.target.value); if (e.target.value) setScreen("catalog"); }}
+                onFocus={e => e.target.style.borderColor = C.gold}
+                onBlur={e => e.target.style.borderColor = "#2a2a2a"}
+                onKeyDown={e => e.key === "Escape" && (setSearchOpen(false), setSearch(""))} />
+              {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>}
+            </div>
+          ) : (
+            <button onClick={() => { setSearchOpen(true); setTimeout(() => searchRef.current && searchRef.current.focus(), 100); }}
+              style={{ background: "#141414", border: "1px solid #2a2a2a", color: C.gray, cursor: "pointer", padding: "10px 16px", borderRadius: 8, fontSize: 13, fontFamily: "inherit", width: "100%", textAlign: "left" }}>
+              🔍 Search cards...
+            </button>
+          )}
+        </div>
+
+        {/* Desktop nav filters */}
         {!isMobile && (
-          <div style={{ display: "flex", gap: 2, marginLeft: 12 }}>
+          <div style={{ display: "flex", gap: 2 }}>
             {SETS.map(s => (
               <button key={s} onClick={() => { setFilters(f => ({ ...f, set: f.set === s ? "" : s })); setScreen("catalog"); }}
-                style={{ background: filters.set === s ? C.red : "transparent", color: filters.set === s ? "#fff" : C.gray, border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+                style={{ background: filters.set === s ? C.red : "transparent", color: filters.set === s ? "#fff" : "#555", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
                 {s.replace("Topps ", "").replace(" F1", "")}
               </button>
             ))}
             <button onClick={() => { setFilters(f => ({ ...f, auto: !f.auto, relic: false })); setScreen("catalog"); }}
-              style={{ background: filters.auto ? C.gold : "transparent", color: filters.auto ? C.black : C.gray, border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
-              Autos
-            </button>
+              style={{ background: filters.auto ? C.gold : "transparent", color: filters.auto ? C.black : "#555", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>AUTO</button>
             <button onClick={() => { setFilters(f => ({ ...f, relic: !f.relic, auto: false })); setScreen("catalog"); }}
-              style={{ background: filters.relic ? "#a78bfa" : "transparent", color: filters.relic ? "#fff" : C.gray, border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
-              Relics
-            </button>
+              style={{ background: filters.relic ? "#a78bfa" : "transparent", color: filters.relic ? "#fff" : "#555", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>RELIC</button>
           </div>
         )}
-        <div style={{ flex: 1, maxWidth: isMobile ? undefined : 400, position: "relative" }}>
-          {(searchOpen || !isMobile) ? (
-            <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.gray, fontSize: 14 }}>🔍</span>
-              <input ref={searchRef} style={{ ...inp, paddingLeft: 40, height: 38, fontSize: 13, borderRadius: 20 }}
-                placeholder="Driver, team, year, numbered..."
-                value={search} onChange={e => { setSearch(e.target.value); if (e.target.value) setScreen("catalog"); }}
-                onKeyDown={e => e.key === "Escape" && (setSearchOpen(false), setSearch(""))} />
-              {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>}
-            </div>
-          ) : (
-            <button onClick={() => { setSearchOpen(true); setTimeout(() => searchRef.current && searchRef.current.focus(), 100); }}
-              style={{ background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 18, padding: 6 }}>🔍</button>
-          )}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <button onClick={() => setScreen("cart")} style={{ position: "relative", background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 20, padding: 6 }}>
+
+        {/* Cart + admin */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <button onClick={() => setScreen("cart")} style={{ position: "relative", background: cartCount > 0 ? "rgba(204,0,0,0.15)" : "none", border: cartCount > 0 ? "1px solid rgba(204,0,0,0.3)" : "none", color: C.white, cursor: "pointer", fontSize: 18, padding: "6px 10px", borderRadius: 8 }}>
             🛒
-            {cartCount > 0 && <span style={{ position: "absolute", top: 0, right: 0, background: C.red, color: "#fff", borderRadius: 10, fontSize: 9, fontWeight: 800, padding: "1px 5px", minWidth: 16, textAlign: "center" }}>{cartCount}</span>}
+            {cartCount > 0 && <span style={{ position: "absolute", top: -2, right: -2, background: C.red, color: "#fff", borderRadius: 10, fontSize: 9, fontWeight: 900, padding: "1px 5px", minWidth: 16, textAlign: "center" }}>{cartCount}</span>}
           </button>
-          <button onClick={() => { setScreen("admin"); setAdminAuth(false); setAdminPass(""); }} style={{ background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 18, padding: 6 }}>👤</button>
-          {isMobile && <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", color: C.gray, cursor: "pointer", fontSize: 22, padding: 6 }}>☰</button>}
+          <button onClick={() => { setScreen("admin"); setAdminAuth(false); setAdminPass(""); }} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18, padding: "6px 8px" }}>👤</button>
+          {isMobile && <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 22, padding: "6px 8px" }}>☰</button>}
         </div>
       </div>
       {isMobile && mobileMenu && (
-        <div style={{ background: C.dark, borderTop: "1px solid " + C.border, padding: "12px 20px" }}>
+        <div style={{ background: "#0a0a0a", borderTop: "1px solid " + C.border, padding: "12px 20px" }}>
           {SETS.map(s => (
             <div key={s} onClick={() => { setFilters(f => ({ ...f, set: s })); setScreen("catalog"); setMobileMenu(false); }}
               style={{ padding: "10px 0", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", borderBottom: "1px solid " + C.border, textTransform: "uppercase", letterSpacing: 1 }}>{s}</div>
@@ -304,41 +321,41 @@ export default function App() {
   const HomeScreen = () => (
     <div style={{ paddingTop: 64 }}>
       {/* HERO */}
-      <div style={{ minHeight: isMobile ? 420 : 520, display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+      <div style={{ minHeight: isMobile ? 340 : 440, display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #080808 0%, #1a0000 40%, #0a0005 70%, #080808 100%)" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 70% 50%, rgba(204,0,0,0.2) 0%, transparent 60%)" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 200, background: "linear-gradient(to top, rgba(204,0,0,0.12), transparent)" }} />
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, " + C.red + ", " + C.gold + ", " + C.red + ")" }} />
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: isMobile ? "80px 20px 60px" : "100px 40px", position: "relative", zIndex: 1, width: "100%" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,0,0,0.2)", border: "1px solid rgba(204,0,0,0.5)", borderRadius: 20, padding: "5px 16px", fontSize: 10, color: "#ff6666", fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.red, display: "inline-block" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: "linear-gradient(to top, rgba(204,0,0,0.1), transparent)" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, " + C.red + ", " + C.gold + ", " + C.red + ")" }} />
+        <div style={{ maxWidth: 1400, margin: "0 auto", padding: isMobile ? "50px 20px 40px" : "60px 40px 50px", position: "relative", zIndex: 1, width: "100%" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,0,0,0.15)", border: "1px solid rgba(204,0,0,0.35)", borderRadius: 4, padding: "4px 14px", fontSize: 9, color: "#ff6666", fontWeight: 900, letterSpacing: 3, textTransform: "uppercase", marginBottom: 18 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.red, display: "inline-block" }} />
             WBC CARDS F1 · PREMIUM COLLECTION
           </div>
-          <h1 style={{ fontSize: isMobile ? 36 : 68, fontWeight: 900, color: C.white, lineHeight: 1.0, marginBottom: 16, maxWidth: 700, textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
-            Premium<br />Formula 1<br /><span style={{ color: C.gold }}>Trading Cards</span>
+          <h1 style={{ fontSize: isMobile ? 38 : 70, fontWeight: 900, color: C.white, lineHeight: 0.92, marginBottom: 14, maxWidth: 700, textTransform: "uppercase", letterSpacing: -1, textShadow: "0 4px 30px rgba(0,0,0,0.9)" }}>
+            PREMIUM<br />FORMULA 1<br /><span style={{ color: C.gold }}> TRADING CARDS</span>
           </h1>
-          <p style={{ fontSize: isMobile ? 14 : 17, color: "#bbb", marginBottom: 16, maxWidth: 520, lineHeight: 1.6 }}>The finest F1 cards in one place.</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 32 }}>
-            {["Topps Chrome", "Sapphire", "Numbered", "Autos", "Relics", "NBA", "Champions"].map(tag => (
-              <span key={tag} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 20, padding: "4px 12px", fontSize: 11, color: "#aaa", fontWeight: 600 }}>{tag}</span>
+          <p style={{ fontSize: isMobile ? 13 : 15, color: "#888", marginBottom: 14, maxWidth: 460, lineHeight: 1.5 }}>The finest F1 cards in one place.</p>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
+            {["Topps Chrome","Sapphire","Numbered","Autos","Relics","NBA","Champions"].map(tag => (
+              <span key={tag} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "3px 10px", fontSize: 10, color: "#777", fontWeight: 600, letterSpacing: 0.5 }}>{tag}</span>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button onClick={() => setScreen("catalog")}
-              style={{ background: C.red, color: "#fff", border: "none", borderRadius: 6, padding: isMobile ? "14px 24px" : "16px 36px", fontSize: isMobile ? 14 : 15, fontWeight: 800, cursor: "pointer", letterSpacing: 1, textTransform: "uppercase", boxShadow: "0 4px 24px rgba(204,0,0,0.4)" }}>
-              🏎 Explore Collection
+              style={{ background: C.red, color: "#fff", border: "none", borderRadius: 6, padding: isMobile ? "12px 22px" : "13px 30px", fontSize: isMobile ? 12 : 13, fontWeight: 900, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase", boxShadow: "0 4px 20px rgba(204,0,0,0.45)" }}>
+              🏎 EXPLORE COLLECTION
             </button>
             <button onClick={() => { setFilters(f => ({ ...f, auto: true })); setScreen("catalog"); }}
-              style={{ background: "rgba(201,168,76,0.15)", color: C.gold, border: "1px solid " + C.gold, borderRadius: 6, padding: isMobile ? "14px 24px" : "16px 36px", fontSize: isMobile ? 14 : 15, fontWeight: 800, cursor: "pointer", letterSpacing: 1, textTransform: "uppercase" }}>
-              ✦ Autos & Relics
+              style={{ background: "transparent", color: C.gold, border: "1px solid rgba(201,168,76,0.4)", borderRadius: 6, padding: isMobile ? "12px 22px" : "13px 30px", fontSize: isMobile ? 12 : 13, fontWeight: 800, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase" }}>
+              ✦ AUTOS & RELICS
             </button>
           </div>
           {!isMobile && (
-            <div style={{ display: "flex", gap: 40, marginTop: 48, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-              {[["500+", "Cards sold"], ["100%", "Authentic"], ["48h", "Fast shipping"], ["PSA/BGS", "Graded available"]].map(([num, label]) => (
+            <div style={{ display: "flex", gap: 32, marginTop: 36, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              {[["500+","Cards sold"],["100%","Authentic"],["48h","Fast shipping"],["PSA·BGS","Graded available"]].map(([num, label]) => (
                 <div key={num}>
-                  <div style={{ color: C.gold, fontSize: 24, fontWeight: 900, lineHeight: 1 }}>{num}</div>
-                  <div style={{ color: "#666", fontSize: 12, marginTop: 4 }}>{label}</div>
+                  <div style={{ color: C.gold, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{num}</div>
+                  <div style={{ color: "#555", fontSize: 11, marginTop: 3, letterSpacing: 0.5 }}>{label}</div>
                 </div>
               ))}
             </div>
