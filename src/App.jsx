@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef } from "react";
+  import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -15,7 +15,7 @@ const DEFAULT_LEGAL = {
   aviso:`AVISO LEGAL\n\nTitular: WBC Cards F1\nEmail: javier@wbccards.com\n\nEn cumplimiento de la Ley 34/2002 LSSI, este sitio es propiedad de WBC Cards F1.`,
   privacidad:`POLÍTICA DE PRIVACIDAD\n\nRESPONSABLE: WBC Cards F1\nFINALIDAD: Gestión de pedidos\nDERECHOS: javier@wbccards.com`,
   cookies:`POLÍTICA DE COOKIES\n\nUsamos cookies técnicas para el funcionamiento del sitio.`,
-  envios:`POLÍTICA DE ENVÍOS\n\nEspaña: 2-5 días laborables\nEuropa: 5-10 días laborables\nEnvíos con seguimiento y toploader.`,
+  envios:`POLÍTICA DE ENVÍOS\n\nEspaña: 2-5 días laborables\nEuropa: 5-10 días laborables\nShippings con seguimiento y toploader.`,
   devoluciones:`POLÍTICA DE DEVOLUCIONES\n\n14 días naturales desde recepción.\nContacto: javier@wbccards.com`
 };
 const getLegal = () => { try { return JSON.parse(localStorage.getItem("wbc_legal")||"null")||DEFAULT_LEGAL; } catch { return DEFAULT_LEGAL; } };
@@ -69,22 +69,22 @@ export default function App() {
     setOrders(getOrders());
   }, []);
 
-  const cartItems = cart.map(c => ({ ...c, product: products.find(p => p._id === c.id) })).filter(c => c.product);
+  const cartItems = citemsmap(c => ({ ...c, product: products.find(p => p._id === c.id) })).filter(c => c.product);
   const cartTotal = cartItems.reduce((s, c) => s + parseFloat(c.product.Precio || 0) * c.qty, 0).toFixed(2);
-  const cartCount = cart.reduce((s, c) => s + c.qty, 0);
-  const inCart = id => cart.some(c => c.id === id);
+  const cartCount = citemsreduce((s, c) => s + c.qty, 0);
+  const inCart = id => citemssome(c => c.id === id);
   const getStock = p => parseInt(p?.Stock || 0);
   const addToCart = (id, e) => { e?.stopPropagation(); setCart(prev => { const ex = prev.find(c => c.id === id); return ex ? prev.map(c => c.id === id ? { ...c, qty: c.qty + 1 } : c) : [...prev, { id, qty: 1 }]; }); };
   const removeFromCart = id => setCart(prev => prev.filter(c => c.id !== id));
   const changeQty = (id, d) => setCart(prev => prev.map(c => c.id === id ? { ...c, qty: Math.max(1, c.qty + d) } : c));
 
   const filtered = products.filter(p => {
-    if (filters.set && (p.Serie || "") !== filters.set) return false;
-    if (filters.piloto && !(p.Piloto || "").toLowerCase().includes(filters.piloto.toLowerCase())) return false;
+    if (filters.set && (p.Series || "") !== filters.set) return false;
+    if (filters.piloto && !(p.Driver || "").toLowerCase().includes(filters.piloto.toLowerCase())) return false;
     if (filters.numerada && !p.Numeracion) return false;
     if (filters.auto && p.Auto !== "TRUE") return false;
     if (filters.relic && p.Relic !== "TRUE") return false;
-    if (search) { const q = search.toLowerCase(); return ["Nombre","Piloto","Equipo","Año","Numeracion","Serie","Paralela","Grading","Nota_Grading"].some(k => (p[k]||"").toLowerCase().includes(q)); }
+    if (search) { const q = search.toLowerCase(); return ["Nombre","Driver","Team","Year","Numeracion","Series","Parallel","Grading","Nota_Grading"].some(k => (p[k]||"").toLowerCase().includes(q)); }
     return true;
   });
 
@@ -93,14 +93,14 @@ export default function App() {
   const rareCards = products.filter(p => p.Auto === "TRUE" || p.Relic === "TRUE" || (p.Numeracion && ["1/1","/5","/10"].includes(p.Numeracion))).slice(0, 8);
 
   const doOrder = () => {
-    if (!orderData.nombre.trim() || !orderData.email.trim() || !orderData.address.trim()) { setOrderError("Rellena nombre, email y dirección."); return; }
-    if (!/\S+@\S+\.\S+/.test(orderData.email)) { setOrderError("Email no válido."); return; }
+    if (!orderData.nombre.trim() || !orderData.email.trim() || !orderData.address.trim()) { setOrderError("Please fill in name, email and address."); return; }
+    if (!/\S+@\S+\.\S+/.test(orderData.email)) { setOrderError("Invalid email."); return; }
     const prods = cartItems.map(c => `- ${c.product.Nombre} x${c.qty} · ${(parseFloat(c.product.Precio||0)*c.qty).toFixed(2)}€`).join("\n");
     const newOrder = { id: Date.now(), ...orderData, items: [...cart], total: cartTotal, createdAt: Date.now(), status: "pending" };
     const updated = [...orders, newOrder]; setOrders(updated); saveOrders(updated);
-    window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(`Pedido WBC Cards - ${orderData.nombre}`)}&body=${encodeURIComponent(`Cliente: ${orderData.nombre}\nEmail: ${orderData.email}\nTel: ${orderData.tel||"N/A"}\nDir: ${orderData.address}\n\n${prods}\n\nTotal: ${cartTotal}€`)}`);
+    window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(`WBC Cards Order - ${orderData.nombre}`)}&body=${encodeURIComponent(`Client: ${orderData.nombre}\nEmail: ${orderData.email}\nPhone: ${orderData.tel||"N/A"}\nAddress: ${orderData.address}\n\n${prods}\n\nTotal: ${cartTotal}€`)}`);
     setOrderOpen(false); setOrderData({ nombre:"", email:"", tel:"", address:"" }); setOrderError(""); setCart([]);
-    setSuccessMsg(`✓ Pedido confirmado · ${cartItems.length} carta${cartItems.length>1?"s":""} · ${cartTotal}€`);
+    setSuccessMsg(`✓ Order confirmed · ${cartItems.length} card${cartItems.length>1?"s":""} · ${cartTotal}€`);
     setTimeout(() => setSuccessMsg(""), 8000); setScreen("home");
   };
 
@@ -125,14 +125,14 @@ export default function App() {
           {stock===0 && <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center" }}><span style={{ color:"#555", fontSize:11, fontWeight:800, letterSpacing:2 }}>SOLD</span></div>}
         </div>
         <div style={{ padding:"12px 14px", flex:1, display:"flex", flexDirection:"column", gap:3 }}>
-          <div style={{ fontSize:11, color:C.gray, textTransform:"uppercase", letterSpacing:1 }}>{p.Piloto}</div>
+          <div style={{ fontSize:11, color:C.gray, textTransform:"uppercase", letterSpacing:1 }}>{p.Driver}</div>
           <div style={{ fontSize:13, fontWeight:700, color:C.white, lineHeight:1.3, minHeight:36 }}>{p.Nombre}</div>
-          {p.Paralela && p.Paralela!=="Base" && <div style={{ fontSize:10, color:rc, fontWeight:600 }}>{p.Paralela}</div>}
+          {p.Parallel && p.Parallel!=="Base" && <div style={{ fontSize:10, color:rc, fontWeight:600 }}>{p.Parallel}</div>}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:"auto", paddingTop:10 }}>
             <div style={{ fontSize:18, fontWeight:900, color:C.gold }}>{parseFloat(p.Precio||0).toFixed(2)}€</div>
             <button onClick={e => { e.stopPropagation(); if(stock>0) addToCart(p._id,e); }}
               style={{ background:inC?"#16a34a":stock===0?"#1a1a1a":C.red, color:"#fff", border:"none", borderRadius:6, padding:"7px 14px", fontSize:11, fontWeight:800, cursor:stock===0?"default":"pointer", textTransform:"uppercase" }}>
-              {inC?"✓":stock===0?"—":"Añadir"}
+              {inC?"✓":stock===0?"—":"Add"}
             </button>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function App() {
           {(searchOpen || !isMobile) ? (
             <div style={{ position:"relative" }}>
               <span style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:C.gray }}>{Icon.search}</span>
-              <input ref={searchRef} style={{ ...inp, paddingLeft:40, height:38, fontSize:13, background:"#1a1a1a", borderRadius:20 }} placeholder="Piloto, equipo, año, numeración..." value={search} onChange={e => { setSearch(e.target.value); if(e.target.value) setScreen("catalog"); }} onKeyDown={e => e.key==="Escape"&&(setSearchOpen(false),setSearch(""))} />
+              <input ref={searchRef} style={{ ...inp, paddingLeft:40, height:38, fontSize:13, background:"#1a1a1a", borderRadius:20 }} placeholder="Driver, equipo, año, numeración..." value={search} onChange={e => { setSearch(e.target.value); if(e.target.value) setScreen("catalog"); }} onKeyDown={e => e.key==="Escape"&&(setSearchOpen(false),setSearch(""))} />
               {search && <button onClick={() => setSearch("")} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", color:C.gray, cursor:"pointer", fontSize:18, lineHeight:1 }}>×</button>}
             </div>
           ) : (
@@ -188,7 +188,7 @@ export default function App() {
   const TrustBar = () => (
     <div style={{ background:"#0a0a0a", borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}`, padding:"18px 0" }}>
       <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 20px", display:"flex", justifyContent:"space-around", flexWrap:"wrap", gap:16 }}>
-        {[["🛡","Cartas Verificadas","100% auténticas"],["🚚","Envíos Internacionales","Europa y mundo"],["🔒","Pago Seguro","Protección total"],["⭐","+500 Ventas","Clientes satisfechos"]].map(([icon,title,sub]) => (
+        {[["🛡","Verified Cards","100% authentic"],["🚚","International Shipping","Europe & worldwide"],["🔒","Secure Payment","Full protection"],["⭐","+500 Sales","Happy collectors"]].map(([icon,title,sub]) => (
           <div key={title} style={{ display:"flex", alignItems:"center", gap:10 }}>
             <span style={{ fontSize:20 }}>{icon}</span>
             <div><div style={{ color:C.white, fontSize:12, fontWeight:700 }}>{title}</div><div style={{ color:"#555", fontSize:11 }}>{sub}</div></div>
@@ -204,7 +204,7 @@ export default function App() {
         <div style={{ color:tagColor||C.red, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:4 }}>{tag}</div>
         <h2 style={{ color:C.white, fontSize:isMobile?22:28, fontWeight:900, margin:0 }}>{title}</h2>
       </div>
-      {onMore && <button onClick={onMore} style={{ background:"none", border:`1px solid ${C.border}`, color:C.gray, borderRadius:6, padding:"7px 16px", fontSize:11, fontWeight:700, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>Ver todo</button>}
+      {onMore && <button onClick={onMore} style={{ background:"none", border:`1px solid ${C.border}`, color:C.gray, borderRadius:6, padding:"7px 16px", fontSize:11, fontWeight:700, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>View all</button>}
     </div>
   );
 
@@ -226,7 +226,7 @@ export default function App() {
               <img src={LOGO_URI} alt="WBC" style={{ width:44, height:44 }} />
               <div><div style={{ color:C.gold, fontWeight:900, fontSize:13, letterSpacing:2 }}>WBC CARDS F1</div><div style={{ color:"#444", fontSize:9, letterSpacing:2 }}>PREMIUM TRADING CARDS</div></div>
             </div>
-            <p style={{ color:"#555", fontSize:12, lineHeight:1.8, marginBottom:16 }}>Especialistas en cartas F1 premium. Topps Chrome, Sapphire, Dynasty. Autos, Relics y numeradas.</p>
+            <p style={{ color:"#555", fontSize:12, lineHeight:1.8, marginBottom:16 }}>Specialists in premium F1 cards. Topps Chrome, Sapphire, Dynasty. Autos, Relics and numbered cards.</p>
             <div style={{ display:"flex", gap:14, alignItems:"center" }}>
               <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" style={{ color:C.gray, display:"flex" }}>{Icon.ig}</a>
               <a href={EBAY_URL} target="_blank" rel="noreferrer" style={{ color:C.gray, fontSize:11, fontWeight:700, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>eBay {Icon.ext}</a>
@@ -239,7 +239,7 @@ export default function App() {
           </div>
           <div>
             <div style={{ color:C.white, fontWeight:700, fontSize:11, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>Legal</div>
-            {[["aviso","Aviso Legal"],["privacidad","Privacidad"],["cookies","Cookies"],["envios","Envíos"],["devoluciones","Devoluciones"]].map(([k,l]) => (
+            {[["aviso","Legal Notice"],["privacidad","Privacy"],["cookies","Cookies"],["envios","Shippings"],["devoluciones","Returns"]].map(([k,l]) => (
               <div key={k} onClick={() => setLegalPage(k)} style={{ color:"#555", fontSize:12, marginBottom:8, cursor:"pointer" }}>{l}</div>
             ))}
           </div>
@@ -248,14 +248,14 @@ export default function App() {
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📧 info@wbccards.com</div>
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📱 @wbccardsf1</div>
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>🛒 ebay.es/str/wildbonocards</div>
-            <div style={{ color:"#555", fontSize:12 }}>🌍 España · Europa</div>
+            <div style={{ color:"#555", fontSize:12 }}>🌍 Spain · Europe</div>
           </div>
         </div>
         <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:20, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
-          <p style={{ color:"#333", fontSize:11 }}>© 2025 WBC Cards F1 · Todos los derechos reservados</p>
+          <p style={{ color:"#333", fontSize:11 }}>© 2025 WBC Cards F1 · All rights reserved</p>
           <div style={{ display:"flex", gap:8 }}>
-            <span style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"4px 10px", fontSize:10, color:"#444" }}>🔒 Pago Seguro</span>
-            <span style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"4px 10px", fontSize:10, color:"#444" }}>📦 Envío Asegurado</span>
+            <span style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"4px 10px", fontSize:10, color:"#444" }}>🔒 Secure Payment</span>
+            <span style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"4px 10px", fontSize:10, color:"#444" }}>📦 Shipping Asegurado</span>
           </div>
         </div>
       </div>
@@ -265,40 +265,82 @@ export default function App() {
   // HOME
   const HomeScreen = () => (
     <div style={{ paddingTop:64 }}>
-      <div style={{ background:"linear-gradient(135deg, #080808 0%, #140000 50%, #080808 100%)", minHeight:isMobile?420:500, display:"flex", alignItems:"center", position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(ellipse at 70% 50%, rgba(204,0,0,0.15) 0%, transparent 60%)" }} />
-        <div style={{ maxWidth:1400, margin:"0 auto", padding:"60px 20px", position:"relative", zIndex:1 }}>
-          <div style={{ display:"inline-block", background:"rgba(204,0,0,0.15)", border:"1px solid rgba(204,0,0,0.3)", borderRadius:20, padding:"4px 14px", fontSize:10, color:C.red, fontWeight:800, letterSpacing:2, textTransform:"uppercase", marginBottom:20 }}>WBC CARDS F1 · PREMIUM COLLECTION</div>
-          <h1 style={{ fontSize:isMobile?32:56, fontWeight:900, color:C.white, lineHeight:1.1, marginBottom:14, maxWidth:700 }}>Premium Formula 1<br/><span style={{ color:C.gold }}>Trading Cards</span></h1>
-          <p style={{ fontSize:isMobile?14:18, color:"#888", marginBottom:36, maxWidth:500, lineHeight:1.6 }}>F1 • NBA • Champions • Topps • Sapphire • Autos • Relics</p>
-          <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-            <button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"14px 28px", fontSize:14, fontWeight:800, cursor:"pointer", letterSpacing:1, textTransform:"uppercase" }}>Explorar colección</button>
-            <button onClick={() => setScreen("catalog")} style={{ background:"transparent", color:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:"14px 28px", fontSize:14, fontWeight:700, cursor:"pointer", letterSpacing:1, textTransform:"uppercase" }}>Últimas cartas</button>
+      <div style={{ minHeight:isMobile?520:620, display:"flex", alignItems:"center", position:"relative", overflow:"hidden" }}>
+        {/* Background image */}
+        <div style={{ position:"absolute", inset:0, backgroundImage:"url('/hero-bg.jpg')", backgroundSize:"cover", backgroundPosition:"center 30%", backgroundRepeat:"no-repeat" }} />
+        {/* Dark overlay */}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.4) 100%)" }} />
+        {/* Red glow bottom */}
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:200, background:"linear-gradient(to top, rgba(204,0,0,0.15), transparent)" }} />
+        {/* Red line top */}
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg, ${C.red}, ${C.gold}, ${C.red})` }} />
+
+        <div style={{ maxWidth:1400, margin:"0 auto", padding:isMobile?"80px 20px 60px":"100px 40px", position:"relative", zIndex:1, width:"100%" }}>
+          {/* Badge */}
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(204,0,0,0.2)", border:"1px solid rgba(204,0,0,0.5)", borderRadius:20, padding:"5px 16px", fontSize:10, color:"#ff6666", fontWeight:800, letterSpacing:2, textTransform:"uppercase", marginBottom:24 }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:C.red, display:"inline-block", animation:"pulse 1.5s infinite" }} />
+            WBC CARDS F1 · PREMIUM COLLECTION
           </div>
+
+          <h1 style={{ fontSize:isMobile?36:68, fontWeight:900, color:C.white, lineHeight:1.0, marginBottom:16, maxWidth:700, textShadow:"0 2px 20px rgba(0,0,0,0.8)" }}>
+            Premium<br/>Formula 1<br/><span style={{ color:C.gold, textShadow:`0 0 40px rgba(201,168,76,0.4)` }}>Trading Cards</span>
+          </h1>
+
+          <p style={{ fontSize:isMobile?14:18, color:"#bbb", marginBottom:12, maxWidth:520, lineHeight:1.6 }}>
+            The finest F1 cards in one place.
+          </p>
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:36 }}>
+            {["Topps Chrome","Sapphire","Numbered","Autos","Relics","NBA","Champions"].map(tag => (
+              <span key={tag} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:20, padding:"4px 12px", fontSize:11, color:"#aaa", fontWeight:600 }}>{tag}</span>
+            ))}
+          </div>
+
+          <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:isMobile?32:0 }}>
+            <button onClick={() => setScreen("catalog")}
+              style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:isMobile?"14px 24px":"16px 36px", fontSize:isMobile?14:15, fontWeight:800, cursor:"pointer", letterSpacing:1, textTransform:"uppercase", boxShadow:"0 4px 24px rgba(204,0,0,0.4)" }}>
+              🏎 Explore Collection
+            </button>
+            <button onClick={() => { setFilters(f=>({...f,auto:true})); setScreen("catalog"); }}
+              style={{ background:"rgba(201,168,76,0.15)", color:C.gold, border:`1px solid ${C.gold}`, borderRadius:6, padding:isMobile?"14px 24px":"16px 36px", fontSize:isMobile?14:15, fontWeight:800, cursor:"pointer", letterSpacing:1, textTransform:"uppercase" }}>
+              ✦ View Autos & Relics
+            </button>
+          </div>
+
+          {/* Stats row */}
+          {!isMobile && (
+            <div style={{ display:"flex", gap:40, marginTop:48, paddingTop:32, borderTop:"1px solid rgba(255,255,255,0.08)" }}>
+              {[["500+","Cards sold"],["100%","Authentic"],["48h","Fast shipping"],["PSA/BGS","Graded cards available"]].map(([num,label]) => (
+                <div key={num}>
+                  <div style={{ color:C.gold, fontSize:24, fontWeight:900, lineHeight:1 }}>{num}</div>
+                  <div style={{ color:"#666", fontSize:12, marginTop:4 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <TrustBar />
       <div style={{ maxWidth:1400, margin:"0 auto", padding:"0 20px" }}>
-        {newArrivals.length > 0 && <div style={{ marginTop:60 }}><SectionHeader tag="Recién llegadas" title="Latest Arrivals" onMore={() => setScreen("catalog")} /><Grid items={newArrivals} /></div>}
+        {newArrivals.length > 0 && <div style={{ marginTop:60 }}><SectionHeader tag="New arrivals" title="Latest Arrivals" onMore={() => setScreen("catalog")} /><Grid items={newArrivals} /></div>}
         {featured.length > 0 && <div style={{ marginTop:60 }}><SectionHeader tag="Premium" title="Featured Cards" tagColor={C.gold} onMore={() => setScreen("catalog")} /><Grid items={featured.slice(0,6)} min={220} /></div>}
         <div style={{ marginTop:60 }}>
-          <SectionHeader tag="Por piloto" title="Drivers Collection" />
+          <SectionHeader tag="By driver" title="Drivers Collection" />
           <div style={{ display:"grid", gridTemplateColumns:`repeat(auto-fill, minmax(${isMobile?140:170}px, 1fr))`, gap:10 }}>
-            {DRIVERS.map(driver => { const count = products.filter(p => (p.Piloto||"").toLowerCase().includes(driver.toLowerCase())).length; return (
+            {DRIVERS.map(driver => { const count = products.filter(p => (p.Driver||"").toLowerCase().includes(driver.toLowerCase())).length; return (
               <div key={driver} onClick={() => { setFilters(f=>({...f,piloto:driver})); setScreen("catalog"); }} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:10, padding:"16px 14px", cursor:"pointer", textAlign:"center" }}>
                 <div style={{ fontSize:26, marginBottom:8 }}>🏎</div>
                 <div style={{ color:C.white, fontWeight:800, fontSize:13 }}>{driver}</div>
-                <div style={{ color:C.gray, fontSize:11, marginTop:4 }}>{count} carta{count!==1?"s":""}</div>
+                <div style={{ color:C.gray, fontSize:11, marginTop:4 }}>{count} card{count!==1?"s":""}</div>
               </div>
             ); })}
           </div>
         </div>
-        {rareCards.length > 0 && <div style={{ marginTop:60 }}><SectionHeader tag="Exclusivas" title="Rare Cards" tagColor="#a78bfa" onMore={() => { setFilters(f=>({...f,numerada:true})); setScreen("catalog"); }} /><Grid items={rareCards} /></div>}
+        {rareCards.length > 0 && <div style={{ marginTop:60 }}><SectionHeader tag="Exclusive" title="Rare Cards" tagColor="#a78bfa" onMore={() => { setFilters(f=>({...f,numerada:true})); setScreen("catalog"); }} /><Grid items={rareCards} /></div>}
         {newArrivals.length===0 && featured.length===0 && !loading && (
           <div style={{ marginTop:60 }}>
-            <SectionHeader tag="Colección completa" title="Catálogo F1" onMore={() => setScreen("catalog")} />
+            <SectionHeader tag="Full collection" title="F1 Catalogue" onMore={() => setScreen("catalog")} />
             <Grid items={products.slice(0,12)} />
-            {products.length > 12 && <div style={{ textAlign:"center", marginTop:32 }}><button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"13px 32px", fontSize:13, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>Ver todas las cartas</button></div>}
+            {products.length > 12 && <div style={{ textAlign:"center", marginTop:32 }}><button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"13px 32px", fontSize:13, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>View all cards</button></div>}
           </div>
         )}
       </div>
@@ -311,8 +353,8 @@ export default function App() {
     <div style={{ paddingTop:64 }}>
       <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 20px 60px" }}>
         <div style={{ marginBottom:24 }}>
-          <h1 style={{ color:C.white, fontSize:isMobile?24:32, fontWeight:900, marginBottom:6 }}>Catálogo F1</h1>
-          <p style={{ color:C.gray, fontSize:13 }}>{filtered.length} carta{filtered.length!==1?"s":""} encontrada{filtered.length!==1?"s":""}</p>
+          <h1 style={{ color:C.white, fontSize:isMobile?24:32, fontWeight:900, marginBottom:6 }}>F1 Catalogue</h1>
+          <p style={{ color:C.gray, fontSize:13 }}>{filtered.length} card{filtered.length!==1?"s":""} found</p>
         </div>
         <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:24 }}>
           <button onClick={() => setFilters({set:"",piloto:"",numerada:false,auto:false,relic:false})} style={{ background:(!filters.set&&!filters.piloto&&!filters.numerada&&!filters.auto&&!filters.relic)?C.red:"#1a1a1a", color:(!filters.set&&!filters.piloto&&!filters.numerada&&!filters.auto&&!filters.relic)?"#fff":C.gray, border:`1px solid ${C.border}`, borderRadius:20, padding:"6px 14px", fontSize:11, fontWeight:700, cursor:"pointer", textTransform:"uppercase" }}>Todo</button>
@@ -322,8 +364,8 @@ export default function App() {
           <button onClick={() => setFilters(f=>({...f,numerada:!f.numerada}))} style={{ background:filters.numerada?"#f59e0b":"#1a1a1a", color:filters.numerada?C.black:C.gray, border:`1px solid ${C.border}`, borderRadius:20, padding:"6px 14px", fontSize:11, fontWeight:700, cursor:"pointer", textTransform:"uppercase" }}>Numeradas</button>
           {DRIVERS.slice(0,6).map(d => <button key={d} onClick={() => setFilters(f=>({...f,piloto:f.piloto===d?"":d}))} style={{ background:filters.piloto===d?"#333":"transparent", color:filters.piloto===d?C.white:C.gray, border:`1px solid ${C.border}`, borderRadius:20, padding:"6px 14px", fontSize:11, fontWeight:600, cursor:"pointer" }}>{d}</button>)}
         </div>
-        {loading && <div style={{ textAlign:"center", padding:60, color:C.gray }}>⏳ Cargando...</div>}
-        {!loading && filtered.length===0 && <div style={{ textAlign:"center", padding:60, color:C.gray }}><div style={{ fontSize:40, marginBottom:12 }}>🏎</div><p>No hay cartas con estos filtros.</p><button onClick={() => setFilters({set:"",piloto:"",numerada:false,auto:false,relic:false})} style={{ marginTop:16, background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"10px 24px", fontSize:13, fontWeight:800, cursor:"pointer" }}>Limpiar filtros</button></div>}
+        {loading && <div style={{ textAlign:"center", padding:60, color:C.gray }}>⏳ Loading...</div>}
+        {!loading && filtered.length===0 && <div style={{ textAlign:"center", padding:60, color:C.gray }}><div style={{ fontSize:40, marginBottom:12 }}>🏎</div><p>No cards match these filters.</p><button onClick={() => setFilters({set:"",piloto:"",numerada:false,auto:false,relic:false})} style={{ marginTop:16, background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"10px 24px", fontSize:13, fontWeight:800, cursor:"pointer" }}>Clear filters</button></div>}
         <div style={{ display:"grid", gridTemplateColumns:`repeat(auto-fill, minmax(${isMobile?160:200}px, 1fr))`, gap:14 }}>
           {filtered.map(p => <ProductCard key={p._id} p={p} />)}
         </div>
@@ -336,12 +378,12 @@ export default function App() {
     if (!selected) return null;
     const stock = getStock(selected); const inC = inCart(selected._id);
     const imgs = [selected.Imagen_URL, selected.Imagen2_URL, selected.Imagen3_URL].filter(Boolean);
-    const similar = products.filter(p => p._id!==selected._id && (p.Piloto===selected.Piloto||p.Serie===selected.Serie)).sort(()=>Math.random()-0.5).slice(0,4);
+    const similar = products.filter(p => p._id!==selected._id && (p.Driver===selected.Driver||p.Series===selected.Series)).sort(()=>Math.random()-0.5).slice(0,4);
     const rc = RARITY_COLOR[selected.Rareza] || C.gray;
     return (
       <div style={{ paddingTop:64 }}>
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"40px 20px 60px" }}>
-          <button onClick={() => setScreen("catalog")} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray, cursor:"pointer", marginBottom:24, fontSize:13 }}>{Icon.back} Volver al catálogo</button>
+          <button onClick={() => setScreen("catalog")} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray, cursor:"pointer", marginBottom:24, fontSize:13 }}>{Icon.back} Back to catalogue</button>
           <div style={{ display:"grid", gridTemplateColumns:isMobile?"1fr":"1fr 1fr", gap:40, alignItems:"start" }}>
             <div>
               <div style={{ background:"#0a0a0a", borderRadius:12, overflow:"hidden", position:"relative", paddingTop:"120%", marginBottom:12 }}>
@@ -358,16 +400,16 @@ export default function App() {
                 {selected.Relic==="TRUE" && <span style={{ background:"rgba(167,139,250,0.15)", border:"1px solid #a78bfa", color:"#a78bfa", fontSize:10, fontWeight:800, padding:"3px 10px", borderRadius:20, textTransform:"uppercase", letterSpacing:1 }}>RELIC</span>}
                 {selected.Numeracion && <span style={{ background:"rgba(100,100,100,0.15)", border:`1px solid ${rc}`, color:rc, fontSize:10, fontWeight:800, padding:"3px 10px", borderRadius:20 }}>{selected.Numeracion}</span>}
               </div>
-              <div style={{ color:C.gray, fontSize:12, textTransform:"uppercase", letterSpacing:2, marginBottom:8 }}>{selected.Piloto} · {selected.Equipo}</div>
+              <div style={{ color:C.gray, fontSize:12, textTransform:"uppercase", letterSpacing:2, marginBottom:8 }}>{selected.Driver} · {selected.Team}</div>
               <h1 style={{ color:C.white, fontSize:isMobile?22:28, fontWeight:900, marginBottom:8, lineHeight:1.2 }}>{selected.Nombre}</h1>
-              {selected.Paralela && selected.Paralela!=="Base" && <div style={{ color:rc, fontWeight:700, fontSize:14, marginBottom:16 }}>{selected.Paralela}</div>}
+              {selected.Parallel && selected.Parallel!=="Base" && <div style={{ color:rc, fontWeight:700, fontSize:14, marginBottom:16 }}>{selected.Parallel}</div>}
               <div style={{ fontSize:isMobile?36:44, fontWeight:900, color:C.gold, marginBottom:24 }}>{parseFloat(selected.Precio||0).toFixed(2)}€</div>
               <button onClick={e => { if(stock>0) addToCart(selected._id,e); }} style={{ width:"100%", background:inC?"#16a34a":stock===0?"#1a1a1a":C.red, color:"#fff", border:"none", borderRadius:8, padding:16, fontSize:15, fontWeight:800, cursor:stock===0?"default":"pointer", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>
-                {inC?"✓ En la cesta":stock===0?"Sin stock":"Añadir a la cesta"}
+                {inC?"✓ In cart":stock===0?"Out of stock":"Add to cart"}
               </button>
-              {inC && <button onClick={() => setScreen("cart")} style={{ width:"100%", background:"transparent", color:C.gold, border:`1px solid ${C.gold}`, borderRadius:8, padding:13, fontSize:14, fontWeight:700, cursor:"pointer", textTransform:"uppercase", letterSpacing:1, marginBottom:24 }}>Ver cesta →</button>}
+              {inC && <button onClick={() => setScreen("cart")} style={{ width:"100%", background:"transparent", color:C.gold, border:`1px solid ${C.gold}`, borderRadius:8, padding:13, fontSize:14, fontWeight:700, cursor:"pointer", textTransform:"uppercase", letterSpacing:1, marginBottom:24 }}>View cart →</button>}
               <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:20 }}>
-                {[["Piloto",selected.Piloto],["Equipo",selected.Equipo],["Año",selected.Año],["Serie",selected.Serie],["Subset",selected.Subset],["Paralela",selected.Paralela],["Numeración",selected.Numeracion],["Estado",selected.Estado],["Grading",selected.Grading==="TRUE"&&selected.Empresa_Grading?`${selected.Empresa_Grading} ${selected.Nota_Grading}`:null],["PSA Población",selected.PSA_Poblacion],["Stock",stock>0?`${stock} ud.`:"Sin stock"]].filter(r=>r[1]).map(([label,value]) => (
+                {[["Driver",selected.Driver],["Team",selected.Team],["Year",selected.Year],["Series",selected.Series],["Subset",selected.Subset],["Parallel",selected.Parallel],["Numbered",selected.Numeracion],["Condition",selected.Condition],["Grading",selected.Grading==="TRUE"&&selected.Empresa_Grading?`${selected.Empresa_Grading} ${selected.Nota_Grading}`:null],["PSA Population",selected.PSA_Poblacion],["Stock",stock>0?`${stock} ud.`:"Out of stock"]].filter(r=>r[1]).map(([label,value]) => (
                   <div key={label} style={{ display:"flex", justifyContent:"space-between", padding:"10px 0", borderBottom:`1px solid #0f0f0f`, fontSize:13 }}>
                     <span style={{ color:C.gray }}>{label}</span><span style={{ color:C.white, fontWeight:600 }}>{value}</span>
                   </div>
@@ -381,7 +423,7 @@ export default function App() {
               )}
             </div>
           </div>
-          {similar.length > 0 && <div style={{ marginTop:60 }}><h2 style={{ color:C.white, fontSize:22, fontWeight:900, marginBottom:20 }}>También te puede gustar</h2><div style={{ display:"grid", gridTemplateColumns:`repeat(auto-fill, minmax(${isMobile?160:200}px, 1fr))`, gap:14 }}>{similar.map(p => <ProductCard key={p._id} p={p} />)}</div></div>}
+          {similar.length > 0 && <div style={{ marginTop:60 }}><h2 style={{ color:C.white, fontSize:22, fontWeight:900, marginBottom:20 }}>You may also like</h2><div style={{ display:"grid", gridTemplateColumns:`repeat(auto-fill, minmax(${isMobile?160:200}px, 1fr))`, gap:14 }}>{similar.map(p => <ProductCard key={p._id} p={p} />)}</div></div>}
         </div>
         <Footer />
       </div>
@@ -391,12 +433,12 @@ export default function App() {
   // CART
   const CartScreen = () => (
     <div style={{ paddingTop:64, maxWidth:900, margin:"0 auto", padding:"80px 20px 60px" }}>
-      <h1 style={{ color:C.white, fontSize:28, fontWeight:900, marginBottom:24 }}>Tu cesta</h1>
+      <h1 style={{ color:C.white, fontSize:28, fontWeight:900, marginBottom:24 }}>Your cart</h1>
       {cartItems.length===0 ? (
         <div style={{ textAlign:"center", padding:80, color:C.gray }}>
           <div style={{ fontSize:48, marginBottom:16 }}>🛒</div>
-          <p style={{ marginBottom:24, fontSize:15 }}>Tu cesta está vacía</p>
-          <button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"13px 32px", fontSize:14, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>Ver catálogo</button>
+          <p style={{ marginBottom:24, fontSize:15 }}>Your cart está vacía</p>
+          <button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"13px 32px", fontSize:14, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>View catalogue</button>
         </div>
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:isMobile?"1fr":"1fr 360px", gap:24, alignItems:"start" }}>
@@ -407,7 +449,7 @@ export default function App() {
                   {c.product.Imagen_URL && <img src={c.product.Imagen_URL} alt="" style={{ width:"100%", height:"100%", objectFit:"contain" }} />}
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ color:C.gray, fontSize:10, textTransform:"uppercase", letterSpacing:1, marginBottom:2 }}>{c.product.Piloto}</div>
+                  <div style={{ color:C.gray, fontSize:10, textTransform:"uppercase", letterSpacing:1, marginBottom:2 }}>{c.product.Driver}</div>
                   <div style={{ color:C.white, fontWeight:700, fontSize:14, marginBottom:4, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{c.product.Nombre}</div>
                   <div style={{ color:C.gold, fontWeight:800, fontSize:16 }}>{(parseFloat(c.product.Precio||0)*c.qty).toFixed(2)}€</div>
                 </div>
@@ -424,11 +466,11 @@ export default function App() {
           </div>
           <div style={{ background:C.card, borderRadius:12, padding:20, border:`1px solid ${C.border}`, position:isMobile?"static":"sticky", top:80 }}>
             <h3 style={{ color:C.white, fontWeight:800, marginBottom:16, fontSize:16, textTransform:"uppercase", letterSpacing:1 }}>Resumen</h3>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8, fontSize:13 }}><span style={{ color:C.gray }}>Subtotal ({cartCount} art.)</span><span style={{ color:C.white }}>{cartTotal}€</span></div>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20, fontSize:13 }}><span style={{ color:C.gray }}>Envío</span><span style={{ color:"#4ade80" }}>A consultar</span></div>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8, fontSize:13 }}><span style={{ color:C.gray }}>Subtotal ({cartCount} items)</span><span style={{ color:C.white }}>{cartTotal}€</span></div>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20, fontSize:13 }}><span style={{ color:C.gray }}>Shipping</span><span style={{ color:"#4ade80" }}>To be confirmed</span></div>
             <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:16, display:"flex", justifyContent:"space-between", marginBottom:20, fontSize:18, fontWeight:900 }}><span style={{ color:C.white }}>Total</span><span style={{ color:C.gold }}>{cartTotal}€</span></div>
-            <button onClick={() => setOrderOpen(true)} style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:8, padding:15, fontSize:15, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>Tramitar pedido →</button>
-            <div style={{ textAlign:"center", marginTop:14, color:"#444", fontSize:10 }}>🔒 Pago seguro · 📦 Envío asegurado</div>
+            <button onClick={() => setOrderOpen(true)} style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:8, padding:15, fontSize:15, fontWeight:800, cursor:"pointer", textTransform:"uppercase", letterSpacing:1 }}>Checkout →</button>
+            <div style={{ textAlign:"center", marginTop:14, color:"#444", fontSize:10 }}>🔒 Pago seguro · 📦 Shipping asegurado</div>
           </div>
         </div>
       )}
@@ -437,33 +479,33 @@ export default function App() {
 
   // ADMIN
   const AdminScreen = () => {
-    const legalKeys = [["aviso","Aviso Legal"],["privacidad","Privacidad"],["cookies","Cookies"],["envios","Envíos"],["devoluciones","Devoluciones"]];
+    const legalKeys = [["aviso","Legal Notice"],["privacidad","Privacy"],["cookies","Cookies"],["envios","Shippings"],["devoluciones","Returns"]];
     return (
       <div style={{ paddingTop:64, maxWidth:1200, margin:"0 auto", padding:"80px 20px 60px" }}>
-        <h1 style={{ color:C.white, fontSize:24, fontWeight:900, marginBottom:24, textTransform:"uppercase", letterSpacing:2 }}>Panel Admin</h1>
+        <h1 style={{ color:C.white, fontSize:24, fontWeight:900, marginBottom:24, textTransform:"uppercase", letterSpacing:2 }}>Admin Panel</h1>
         {!adminAuth ? (
           <div style={{ maxWidth:400, background:C.card, borderRadius:14, padding:32, border:`1px solid ${C.border}` }}>
             <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}><img src={LOGO_URI} alt="WBC" style={{ width:80, height:80 }} /></div>
-            <h3 style={{ color:C.white, textAlign:"center", marginBottom:6, fontWeight:800 }}>Acceso Administrador</h3>
-            <p style={{ color:C.gray, textAlign:"center", fontSize:12, marginBottom:20 }}>Solo uso interno</p>
-            <input style={{ ...inp, marginBottom:10 }} type="password" placeholder="Contraseña" value={adminPass} onChange={e => setAdminPass(e.target.value)} onKeyDown={e => { if(e.key==="Enter"){adminPass===ADMIN_PASSWORD?(setAdminAuth(true),setAdminError("")):setAdminError("Contraseña incorrecta.");} }} />
+            <h3 style={{ color:C.white, textAlign:"center", marginBottom:6, fontWeight:800 }}>Admin Access</h3>
+            <p style={{ color:C.gray, textAlign:"center", fontSize:12, marginBottom:20 }}>Internal use only</p>
+            <input style={{ ...inp, marginBottom:10 }} type="password" placeholder="Password" value={adminPass} onChange={e => setAdminPass(e.target.value)} onKeyDown={e => { if(e.key==="Enter"){adminPass===ADMIN_PASSWORD?(setAdminAuth(true),setAdminError("")):setAdminError("Wrong password.");} }} />
             {adminError && <p style={{ color:"#f87171", fontSize:12, marginBottom:10 }}>{adminError}</p>}
-            <button style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:8, padding:13, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"inherit", textTransform:"uppercase" }} onClick={() => { adminPass===ADMIN_PASSWORD?(setAdminAuth(true),setAdminError("")):setAdminError("Contraseña incorrecta."); }}>Entrar</button>
+            <button style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:8, padding:13, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"inherit", textTransform:"uppercase" }} onClick={() => { adminPass===ADMIN_PASSWORD?(setAdminAuth(true),setAdminError("")):setAdminError("Wrong password."); }}>Entrar</button>
           </div>
         ) : (
           <>
             <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-              {[["orders","Pedidos"],["legal","Textos Legales"]].map(([id,label]) => <button key={id} onClick={() => setAdminTab(id)} style={{ background:adminTab===id?C.red:"#1a1a1a", color:"#fff", border:`1px solid ${C.border}`, borderRadius:8, padding:"9px 20px", fontSize:12, fontWeight:800, cursor:"pointer", textTransform:"uppercase" }}>{label}</button>)}
+              {[["orders","Orders"],["legal","Legal Texts"]].map(([id,label]) => <button key={id} onClick={() => setAdminTab(id)} style={{ background:adminTab===id?C.red:"#1a1a1a", color:"#fff", border:`1px solid ${C.border}`, borderRadius:8, padding:"9px 20px", fontSize:12, fontWeight:800, cursor:"pointer", textTransform:"uppercase" }}>{label}</button>)}
             </div>
             {adminTab==="orders" && (
               <>
-                <p style={{ color:C.gray, fontSize:13, marginBottom:16 }}>{orders.length} pedido{orders.length!==1?"s":""}</p>
-                {orders.length===0 ? <div style={{ textAlign:"center", padding:60, color:C.gray, background:C.card, borderRadius:12 }}>No hay pedidos</div> : (
+                <p style={{ color:C.gray, fontSize:13, marginBottom:16 }}>{orders.length} order{orders.length!==1?"s":""}</p>
+                {orders.length===0 ? <div style={{ textAlign:"center", padding:60, color:C.gray, background:C.card, borderRadius:12 }}>No orders yet</div> : (
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))", gap:12 }}>
                     {orders.map(order => {
                       const orderProds = order.items.map(c => { const p = products.find(x=>x._id===c.id); return p?`${p.Nombre} x${c.qty}`:""; }).filter(Boolean);
                       const statusColor = order.status==="paid"?"#4ade80":order.status==="sent"?"#60a5fa":C.red;
-                      const statusLabel = order.status==="paid"?"Pagado":order.status==="sent"?"Enviado":"Pendiente";
+                      const statusLabel = order.status==="paid"?"Paid":order.status==="sent"?"Shipped":"Pending";
                       return (
                         <div key={order.id} style={{ background:C.card, borderRadius:12, padding:16, border:`1px solid ${C.border}` }}>
                           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}><span style={{ fontWeight:800, color:C.white }}>{order.nombre}</span><span style={{ fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:20, border:`1px solid ${statusColor}`, color:statusColor }}>{statusLabel}</span></div>
@@ -475,9 +517,9 @@ export default function App() {
                             <div style={{ fontSize:14, fontWeight:800, color:C.gold, marginTop:6 }}>{order.total}€</div>
                           </div>
                           <div style={{ display:"flex", gap:6 }}>
-                            {order.status==="pending" && <button onClick={() => { const u=orders.map(o=>o.id===order.id?{...o,status:"sent"}:o); setOrders(u); saveOrders(u); }} style={{ flex:2, background:"#1e3a5f", color:"#60a5fa", border:"1px solid #2563eb", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>Marcar enviado</button>}
-                            {order.status==="sent" && <button onClick={() => { const u=orders.map(o=>o.id===order.id?{...o,status:"paid"}:o); setOrders(u); saveOrders(u); }} style={{ flex:2, background:"#14532d", color:"#4ade80", border:"1px solid #16a34a", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>✓ Pagado</button>}
-                            <button onClick={() => { const u=orders.filter(o=>o.id!==order.id); setOrders(u); saveOrders(u); }} style={{ flex:1, background:"#1e0000", color:"#f87171", border:"1px solid #7f1d1d", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>Eliminar</button>
+                            {order.status==="pending" && <button onClick={() => { const u=orders.map(o=>o.id===order.id?{...o,status:"sent"}:o); setOrders(u); saveOrders(u); }} style={{ flex:2, background:"#1e3a5f", color:"#60a5fa", border:"1px solid #2563eb", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>Mark shipped</button>}
+                            {order.status==="sent" && <button onClick={() => { const u=orders.map(o=>o.id===order.id?{...o,status:"paid"}:o); setOrders(u); saveOrders(u); }} style={{ flex:2, background:"#14532d", color:"#4ade80", border:"1px solid #16a34a", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>✓ Paid</button>}
+                            <button onClick={() => { const u=orders.filter(o=>o.id!==order.id); setOrders(u); saveOrders(u); }} style={{ flex:1, background:"#1e0000", color:"#f87171", border:"1px solid #7f1d1d", borderRadius:6, padding:8, fontSize:11, fontWeight:700, cursor:"pointer" }}>Delete</button>
                           </div>
                         </div>
                       );
@@ -492,7 +534,7 @@ export default function App() {
                   {legalKeys.map(([k,l]) => <button key={k} onClick={() => setActiveLegal(k)} style={{ background:activeLegal===k?C.red:"#1a1a1a", color:"#fff", border:`1px solid ${C.border}`, borderRadius:6, padding:"7px 14px", fontSize:11, fontWeight:700, cursor:"pointer" }}>{l}</button>)}
                 </div>
                 <textarea style={{ ...inp, minHeight:320, resize:"vertical", lineHeight:1.7, fontSize:12 }} value={editingLegal[activeLegal]!==undefined?editingLegal[activeLegal]:legal[activeLegal]} onChange={e => setEditingLegal(prev=>({...prev,[activeLegal]:e.target.value}))} />
-                <button onClick={() => { const u={...legal,...editingLegal}; setLegal(u); saveLegal(u); setLegalSaved(true); setTimeout(()=>setLegalSaved(false),2000); }} style={{ marginTop:12, background:legalSaved?"#16a34a":C.red, color:"#fff", border:"none", borderRadius:8, padding:"12px 24px", fontSize:13, fontWeight:800, cursor:"pointer", textTransform:"uppercase" }}>{legalSaved?"✓ Guardado":"Guardar"}</button>
+                <button onClick={() => { const u={...legal,...editingLegal}; setLegal(u); saveLegal(u); setLegalSaved(true); setTimeout(()=>setLegalSaved(false),2000); }} style={{ marginTop:12, background:legalSaved?"#16a34a":C.red, color:"#fff", border:"none", borderRadius:8, padding:"12px 24px", fontSize:13, fontWeight:800, cursor:"pointer", textTransform:"uppercase" }}>{legalSaved?"✓ Saved":"Save"}</button>
               </div>
             )}
           </>
@@ -503,7 +545,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily:"-apple-system, 'Segoe UI', sans-serif", minHeight:"100vh", background:C.dark, color:C.white }}>
-      <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder, textarea::placeholder { color: #444; } ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; } a { color: inherit; } button { font-family: inherit; }`}</style>
+      <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder, textarea::placeholder { color: #444; } ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; } a { color: inherit; } button { font-family: inherit; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
 
       <Navbar />
 
@@ -513,7 +555,7 @@ export default function App() {
           <div style={{ maxWidth:680, margin:"0 auto", background:C.dark, minHeight:"100vh", paddingBottom:60 }}>
             <div style={{ background:C.black, padding:"16px 20px", display:"flex", alignItems:"center", gap:12, borderBottom:`1px solid ${C.border}`, position:"sticky", top:0 }}>
               <button onClick={() => setLegalPage(null)} style={{ background:"none", border:"none", color:C.gold, fontSize:26, cursor:"pointer" }}>‹</button>
-              <span style={{ color:C.gold, fontSize:13, fontWeight:700, textTransform:"uppercase", letterSpacing:1 }}>{{aviso:"Aviso Legal",privacidad:"Privacidad",cookies:"Cookies",envios:"Envíos",devoluciones:"Devoluciones"}[legalPage]}</span>
+              <span style={{ color:C.gold, fontSize:13, fontWeight:700, textTransform:"uppercase", letterSpacing:1 }}>{{aviso:"Legal Notice",privacidad:"Privacy",cookies:"Cookies",envios:"Shippings",devoluciones:"Returns"}[legalPage]}</span>
             </div>
             <div style={{ padding:"24px 20px" }}><pre style={{ color:"#aaa", fontSize:13, lineHeight:1.9, whiteSpace:"pre-wrap", fontFamily:"inherit" }}>{legal[legalPage]}</pre></div>
           </div>
@@ -525,14 +567,14 @@ export default function App() {
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", zIndex:200, display:"flex", alignItems:"flex-end", justifyContent:"center" }} onClick={() => setOrderOpen(false)}>
           <div style={{ background:"#141414", borderRadius:"20px 20px 0 0", padding:"0 24px 44px", width:"100%", maxWidth:560, maxHeight:"93vh", overflowY:"auto", borderTop:`1px solid ${C.border}` }} onClick={e => e.stopPropagation()}>
             <div style={{ width:40, height:3, background:C.border, borderRadius:2, margin:"12px auto 24px" }} />
-            <h2 style={{ color:C.red, fontSize:18, fontWeight:900, marginBottom:4, textTransform:"uppercase", letterSpacing:1 }}>Datos del pedido</h2>
-            <p style={{ color:C.gray, fontSize:12, marginBottom:20 }}>Completa tus datos y te contactamos para el pago.</p>
+            <h2 style={{ color:C.red, fontSize:18, fontWeight:900, marginBottom:4, textTransform:"uppercase", letterSpacing:1 }}>Order details</h2>
+            <p style={{ color:C.gray, fontSize:12, marginBottom:20 }}>Fill in your details and we will contact you for payment.</p>
             <div style={{ background:"#0a0a0a", borderRadius:10, padding:"10px 14px", marginBottom:20 }}>
               {cartItems.map(c => <div key={c.id} style={{ padding:"8px 0", borderBottom:`1px solid ${C.border}`, display:"flex", justifyContent:"space-between", fontSize:12 }}><span style={{ color:"#888" }}>{c.product.Nombre} x{c.qty}</span><span style={{ color:C.gold, fontWeight:700 }}>{(parseFloat(c.product.Precio||0)*c.qty).toFixed(2)}€</span></div>)}
               <div style={{ display:"flex", justifyContent:"space-between", paddingTop:10, fontSize:16, fontWeight:900 }}><span style={{ color:C.gray }}>Total</span><span style={{ color:C.gold }}>{cartTotal}€</span></div>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:16 }}>
-              {[["Nombre *","text","Tu nombre completo","nombre"],["Email *","email","tu@email.com","email"],["Teléfono","tel","600 000 000","tel"],["Dirección de envío *","text","Calle, número, ciudad, CP","address"]].map(([label,type,ph,key]) => (
+              {[["Full name *","text","Your full name","nombre"],["Email *","email","your@email.com","email"],["Phone","tel","+34 600 000 000","tel"],["Shipping address *","text","Street, number, city, postcode","address"]].map(([label,type,ph,key]) => (
                 <div key={key}>
                   <label style={{ fontSize:11, fontWeight:700, color:C.gray, display:"block", marginBottom:5, textTransform:"uppercase", letterSpacing:0.5 }}>{label}</label>
                   <input style={inp} type={type} placeholder={ph} value={orderData[key]} onChange={e => setOrderData(d=>({...d,[key]:e.target.value}))} />
@@ -540,8 +582,8 @@ export default function App() {
               ))}
             </div>
             {orderError && <p style={{ color:"#f87171", fontSize:12, marginBottom:12 }}>{orderError}</p>}
-            <button style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:10, padding:15, fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:"inherit", marginBottom:10, textTransform:"uppercase", letterSpacing:1 }} onClick={doOrder}>Confirmar pedido</button>
-            <button style={{ width:"100%", background:"none", color:C.gray, border:`1px solid ${C.border}`, borderRadius:10, padding:13, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }} onClick={() => setOrderOpen(false)}>Cancelar</button>
+            <button style={{ width:"100%", background:C.red, color:"#fff", border:"none", borderRadius:10, padding:15, fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:"inherit", marginBottom:10, textTransform:"uppercase", letterSpacing:1 }} onClick={doOrder}>Confirm order</button>
+            <button style={{ width:"100%", background:"none", color:C.gray, border:`1px solid ${C.border}`, borderRadius:10, padding:13, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }} onClick={() => setOrderOpen(false)}>Cancel</button>
           </div>
         </div>
       )}
@@ -558,7 +600,7 @@ export default function App() {
       {successMsg && <div style={{ position:"fixed", bottom:isMobile?80:24, left:"50%", transform:"translateX(-50%)", background:"#14532d", color:"#86efac", padding:"12px 24px", borderRadius:8, fontSize:14, fontWeight:600, zIndex:500, whiteSpace:"nowrap", boxShadow:"0 4px 24px rgba(0,0,0,0.5)" }}>{successMsg}</div>}
 
       {/* SCREENS */}
-      {loading && screen==="home" && <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", color:C.gray, fontSize:14 }}>⏳ Cargando colección...</div>}
+      {loading && screen==="home" && <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", color:C.gray, fontSize:14 }}>⏳ Loading collection...</div>}
       {!loading && screen==="home" && <HomeScreen />}
       {screen==="catalog" && <CatalogScreen />}
       {screen==="product" && <ProductScreen />}
@@ -570,7 +612,7 @@ export default function App() {
         <>
           <div style={{ paddingBottom:70 }} />
           <div style={{ position:"fixed", bottom:0, left:0, right:0, background:C.black, borderTop:`1px solid ${C.border}`, display:"flex", paddingBottom:"env(safe-area-inset-bottom, 16px)", paddingTop:10, zIndex:100 }}>
-            {[["home","🏠","Inicio"],["catalog","🏎","Catálogo"],["cart","🛒","Cesta"],["admin","👤","Admin"]].map(([id,icon,label]) => (
+            {[["home","🏠","Home"],["catalog","🏎","Catalogue"],["cart","🛒","Cart"],["admin","👤","Admin"]].map(([id,icon,label]) => (
               <div key={id} onClick={() => { setScreen(id); if(id==="admin"){setAdminAuth(false);setAdminPass("");} }} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:2, cursor:"pointer", padding:"2px 0", position:"relative" }}>
                 <span style={{ fontSize:18 }}>{icon}</span>
                 {id==="cart" && cartCount>0 && <span style={{ position:"absolute", top:0, right:"20%", background:C.red, color:"#fff", borderRadius:10, fontSize:8, fontWeight:800, padding:"1px 5px" }}>{cartCount}</span>}
