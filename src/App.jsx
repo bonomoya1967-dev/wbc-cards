@@ -1,9 +1,12 @@
-  import { useState, useEffect, useRef } from "react";
+ import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "javier@wbccards.com";
 const ADMIN_PASSWORD = "admin2026";
 const LOGO_URI = "/Logo-f1.png";
+const INSTAGRAM_URL = "https://instagram.com/wbccardsf1";
+const EBAY_URL = "https://www.ebay.es/str/wildbonocards";
+const CARDMARKET_URL = "https://www.cardmarket.com/es/Pokemon/Users/WBCcards";
 const C = { black:"#080808", dark:"#0f0f0f", card:"#141414", border:"#1e1e1e", gold:"#c9a84c", red:"#cc0000", white:"#f5f5f5", gray:"#666" };
 const DRIVERS = ["Verstappen","Hamilton","Leclerc","Alonso","Senna","Schumacher","Piastri","Norris","Russell","Sainz"];
 const SETS = ["Topps Chrome F1","Topps Sapphire F1","Topps Dynasty","Turbo Attax"];
@@ -225,9 +228,9 @@ export default function App() {
             </div>
             <p style={{ color:"#555", fontSize:12, lineHeight:1.8, marginBottom:16 }}>Especialistas en cartas F1 premium. Topps Chrome, Sapphire, Dynasty. Autos, Relics y numeradas.</p>
             <div style={{ display:"flex", gap:14, alignItems:"center" }}>
-              <a href="https://instagram.com/wildbono2011" target="_blank" rel="noreferrer" style={{ color:C.gray, display:"flex" }}>{Icon.ig}</a>
-              <a href="https://www.cardmarket.com" target="_blank" rel="noreferrer" style={{ color:C.gray, fontSize:11, fontWeight:700, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>Cardmarket {Icon.ext}</a>
-              <a href="https://www.ebay.es" target="_blank" rel="noreferrer" style={{ color:C.gray, fontSize:11, fontWeight:700, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>eBay {Icon.ext}</a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" style={{ color:C.gray, display:"flex" }}>{Icon.ig}</a>
+              <a href={EBAY_URL} target="_blank" rel="noreferrer" style={{ color:C.gray, fontSize:11, fontWeight:700, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>eBay {Icon.ext}</a>
+              <a href={CARDMARKET_URL} target="_blank" rel="noreferrer" style={{ color:C.gray, fontSize:11, fontWeight:700, textDecoration:"none", display:"flex", alignItems:"center", gap:4 }}>Cardmarket {Icon.ext}</a>
             </div>
           </div>
           <div>
@@ -243,7 +246,8 @@ export default function App() {
           <div>
             <div style={{ color:C.white, fontWeight:700, fontSize:11, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>Contacto</div>
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📧 javier@wbccards.com</div>
-            <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📱 @wildbono2011</div>
+            <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📱 @wbccardsf1</div>
+            <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>🛒 ebay.es/str/wildbonocards</div>
             <div style={{ color:"#555", fontSize:12 }}>🌍 España · Europa</div>
           </div>
         </div>
@@ -266,7 +270,7 @@ export default function App() {
         <div style={{ maxWidth:1400, margin:"0 auto", padding:"60px 20px", position:"relative", zIndex:1 }}>
           <div style={{ display:"inline-block", background:"rgba(204,0,0,0.15)", border:"1px solid rgba(204,0,0,0.3)", borderRadius:20, padding:"4px 14px", fontSize:10, color:C.red, fontWeight:800, letterSpacing:2, textTransform:"uppercase", marginBottom:20 }}>WBC CARDS F1 · PREMIUM COLLECTION</div>
           <h1 style={{ fontSize:isMobile?32:56, fontWeight:900, color:C.white, lineHeight:1.1, marginBottom:14, maxWidth:700 }}>Premium Formula 1<br/><span style={{ color:C.gold }}>Trading Cards</span></h1>
-          <p style={{ fontSize:isMobile?14:18, color:"#888", marginBottom:36, maxWidth:500, lineHeight:1.6 }}>Topps • Sapphire • Chrome • Numbered • Autos • Relics</p>
+          <p style={{ fontSize:isMobile?14:18, color:"#888", marginBottom:36, maxWidth:500, lineHeight:1.6 }}>F1 • NBA • Champions • Topps • Sapphire • Autos • Relics</p>
           <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
             <button onClick={() => setScreen("catalog")} style={{ background:C.red, color:"#fff", border:"none", borderRadius:6, padding:"14px 28px", fontSize:14, fontWeight:800, cursor:"pointer", letterSpacing:1, textTransform:"uppercase" }}>Explorar colección</button>
             <button onClick={() => setScreen("catalog")} style={{ background:"transparent", color:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:"14px 28px", fontSize:14, fontWeight:700, cursor:"pointer", letterSpacing:1, textTransform:"uppercase" }}>Últimas cartas</button>
