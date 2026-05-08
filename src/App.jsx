@@ -1,4 +1,4 @@
-  import { useState, useEffect, useRef } from "react";
+ import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -69,7 +69,7 @@ export default function App() {
     setOrders(getOrders());
   }, []);
 
-  const cartItems = citemsmap(c => ({ ...c, product: products.find(p => p._id === c.id) })).filter(c => c.product);
+  const cartItems = cart.map(c => ({ ...c, product: products.find(p => p._id === c.id) })).filter(c => c.product);
   const cartTotal = cartItems.reduce((s, c) => s + parseFloat(c.product.Precio || 0) * c.qty, 0).toFixed(2);
   const cartCount = citemsreduce((s, c) => s + c.qty, 0);
   const inCart = id => citemssome(c => c.id === id);
