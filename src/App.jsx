@@ -1,6 +1,5 @@
- import { useState, useEffect } from "react";
+  import { useState, useEffect } from "react";
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "tu@email.com";
 const ADMIN_PASSWORD = "admin2026";
@@ -24,27 +23,21 @@ const T = {
     no_products: "No hay productos disponibles",
     add_cart: "Añadir", added: "✓ Añadido", out_stock: "Sin stock",
     rarity: "Rareza", series: "Serie", stock_label: "Stock", price: "Precio",
-    cart_title: "Tu cesta", cart_empty: "Tu cesta está vacía",
-    cart_empty_msg: "Añade productos del catálogo", see_catalog: "Ver catálogo",
+    cart_title: "Tu cesta", cart_empty_msg: "Añade productos del catálogo", see_catalog: "Ver catálogo",
     checkout: "Tramitar pedido →", total: "Total",
-    order_title: "Datos del pedido",
-    order_sub: "Completa tus datos y te contactamos para el pago.",
+    order_title: "Datos del pedido", order_sub: "Completa tus datos y te contactamos para el pago.",
     name_l: "Nombre *", email_l: "Email *", tel_l: "Teléfono", address_l: "Dirección de envío *",
-    name_ph: "Tu nombre completo", email_ph: "tu@email.com", tel_ph: "600 000 000",
-    address_ph: "Calle, número, ciudad, CP",
+    name_ph: "Tu nombre completo", email_ph: "tu@email.com", tel_ph: "600 000 000", address_ph: "Calle, número, ciudad, CP",
     confirm: "Confirmar pedido", cancel: "Cancelar",
     err_fields: "Rellena nombre, email y dirección.", err_email: "Email no válido.",
     success: (n, t) => `✓ Pedido confirmado · ${n} producto${n > 1 ? "s" : ""} · ${t}€. Te contactamos en breve.`,
     access_admin: "Acceso Admin", internal: "Solo uso interno.",
     enter: "Entrar", wrong_pass: "Contraseña incorrecta.", password: "Contraseña",
-    no_orders: "No hay pedidos",
-    pending: "Pendiente", sent: "Enviado", paid: "Pagado",
+    no_orders: "No hay pedidos", pending: "Pendiente", sent: "Enviado", paid: "Pagado",
     mark_sent: "Marcar enviado", mark_paid: "✓ Pagado", delete_btn: "Eliminar",
-    orders_count: (n) => `${n} pedido${n !== 1 ? "s" : ""}`,
-    panel_admin: "Panel Admin",
-    detail: "Detalle del producto",
-    select_detail: "Selecciona un producto",
-    in_cart: "✓ En cesta",
+    orders_count: (n) => `${n} pedido${n !== 1 ? "s" : ""}`, panel_admin: "Panel Admin",
+    detail: "Detalle del producto", select_detail: "Selecciona un producto", in_cart: "✓ En cesta",
+    also_like: "También te puede gustar",
     email_subject: (n) => `Nuevo pedido - ${n}`,
     email_body: (o, prods, total) => `Nuevo pedido\n\nCliente: ${o.nombre}\nEmail: ${o.email}\nTeléfono: ${o.tel || "No indicado"}\nDirección: ${o.address}\n\nProductos:\n${prods}\nTotal: ${total}€\n\nID: ${o.id}`,
   },
@@ -58,27 +51,21 @@ const T = {
     no_products: "No products available",
     add_cart: "Add", added: "✓ Added", out_stock: "Out of stock",
     rarity: "Rarity", series: "Series", stock_label: "Stock", price: "Price",
-    cart_title: "Your cart", cart_empty: "Your cart is empty",
-    cart_empty_msg: "Add products from the catalogue", see_catalog: "View catalogue",
+    cart_title: "Your cart", cart_empty_msg: "Add products from the catalogue", see_catalog: "View catalogue",
     checkout: "Checkout →", total: "Total",
-    order_title: "Order details",
-    order_sub: "Fill in your details and we'll contact you for payment.",
+    order_title: "Order details", order_sub: "Fill in your details and we'll contact you for payment.",
     name_l: "Name *", email_l: "Email *", tel_l: "Phone", address_l: "Shipping address *",
-    name_ph: "Your full name", email_ph: "you@email.com", tel_ph: "+34 600 000 000",
-    address_ph: "Street, number, city, postcode",
+    name_ph: "Your full name", email_ph: "you@email.com", tel_ph: "+34 600 000 000", address_ph: "Street, number, city, postcode",
     confirm: "Confirm order", cancel: "Cancel",
     err_fields: "Please fill in name, email and address.", err_email: "Invalid email.",
     success: (n, t) => `✓ Order confirmed · ${n} product${n > 1 ? "s" : ""} · €${t}. We'll contact you shortly.`,
     access_admin: "Admin Access", internal: "Internal use only.",
     enter: "Sign in", wrong_pass: "Wrong password.", password: "Password",
-    no_orders: "No orders yet",
-    pending: "Pending", sent: "Shipped", paid: "Paid",
+    no_orders: "No orders yet", pending: "Pending", sent: "Shipped", paid: "Paid",
     mark_sent: "Mark shipped", mark_paid: "✓ Mark paid", delete_btn: "Delete",
-    orders_count: (n) => `${n} order${n !== 1 ? "s" : ""}`,
-    panel_admin: "Admin Panel",
-    detail: "Product detail",
-    select_detail: "Select a product",
-    in_cart: "✓ In cart",
+    orders_count: (n) => `${n} order${n !== 1 ? "s" : ""}`, panel_admin: "Admin Panel",
+    detail: "Product detail", select_detail: "Select a product", in_cart: "✓ In cart",
+    also_like: "You may also like",
     email_subject: (n) => `New order - ${n}`,
     email_body: (o, prods, total) => `New order\n\nClient: ${o.nombre}\nEmail: ${o.email}\nPhone: ${o.tel || "Not provided"}\nAddress: ${o.address}\n\nProducts:\n${prods}\nTotal: €${total}\n\nID: ${o.id}`,
   }
@@ -122,8 +109,7 @@ const CATEGORIES = (t) => [
 
 const RARITY_COLORS = {
   "Common": "#888", "Uncommon": "#4ade80", "Rare": "#60a5fa",
-  "Ultra Rare": "#a78bfa", "Secret Rare": "#f59e0b", "Holo": "#ec4899",
-  "Special": GOLD,
+  "Ultra Rare": "#a78bfa", "Secret Rare": "#f59e0b", "Holo": "#ec4899", "Special": GOLD,
 };
 
 export default function App() {
@@ -252,19 +238,9 @@ export default function App() {
     return (
       <div onClick={() => setSelected(p)} style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 180, background: "#111", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-          {p.Imagen_URL ? (
-            <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} />
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><CardIcon size={48} color="#333" /></div>
-          )}
-          {p.Rareza && (
-            <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: `1px solid ${rarityColor}`, borderRadius: 4, padding: "2px 7px", fontSize: 9, color: rarityColor, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>{p.Rareza}</div>
-          )}
-          {stock === 0 && (
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: "#666", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t.out_stock}</span>
-            </div>
-          )}
+          {p.Imagen_URL ? <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} /> : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><CardIcon size={48} color="#333" /></div>}
+          {p.Rareza && <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: `1px solid ${rarityColor}`, borderRadius: 4, padding: "2px 7px", fontSize: 9, color: rarityColor, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>{p.Rareza}</div>}
+          {stock === 0 && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#666", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t.out_stock}</span></div>}
         </div>
         <div style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#eee", lineHeight: 1.3 }}>{p.Nombre}</div>
@@ -285,8 +261,7 @@ export default function App() {
     <div style={{ width: 300, background: DARK, borderLeft: "1px solid #222", overflow: "auto", flexShrink: 0 }}>
       {!selected ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: "#333", padding: 32, textAlign: "center" }}>
-          <CardIcon size={48} color="#333" />
-          <p style={{ marginTop: 16, fontSize: 13 }}>{t.select_detail}</p>
+          <CardIcon size={48} color="#333" /><p style={{ marginTop: 16, fontSize: 13 }}>{t.select_detail}</p>
         </div>
       ) : (
         <div style={{ padding: 20 }}>
@@ -294,18 +269,13 @@ export default function App() {
             <span style={{ color: GOLD, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{t.detail}</span>
             <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "#555", fontSize: 18, cursor: "pointer" }}>×</button>
           </div>
-          {selected.Imagen_URL && (
-            <div style={{ height: 200, background: "#111", borderRadius: 10, overflow: "hidden", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src={selected.Imagen_URL} alt={selected.Nombre} style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} />
-            </div>
-          )}
+          {selected.Imagen_URL && <div style={{ height: 200, background: "#111", borderRadius: 10, overflow: "hidden", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><img src={selected.Imagen_URL} alt={selected.Nombre} style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} /></div>}
           <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{selected.Nombre}</h2>
           {selected.Rareza && <div style={{ display: "inline-block", background: "rgba(201,168,76,0.1)", border: `1px solid ${GOLD}`, borderRadius: 4, padding: "2px 8px", fontSize: 10, color: GOLD, fontWeight: 700, marginBottom: 12, letterSpacing: 1, textTransform: "uppercase" }}>{selected.Rareza}</div>}
           <div style={{ borderTop: "1px solid #222", paddingTop: 12 }}>
             {[[t.price, `${parseFloat(selected.Precio || 0).toFixed(2)}€`], [t.series, selected.Serie], ["Categoría", selected.Categoria], [t.stock_label, selected.Stock]].filter(r => r[1]).map(([label, value]) => (
               <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #1e1e1e", fontSize: 13 }}>
-                <span style={{ color: "#555" }}>{label}</span>
-                <span style={{ fontWeight: 600, color: "#ddd" }}>{value}</span>
+                <span style={{ color: "#555" }}>{label}</span><span style={{ fontWeight: 600, color: "#ddd" }}>{value}</span>
               </div>
             ))}
           </div>
@@ -332,12 +302,7 @@ export default function App() {
       {!loading && !loadError && (
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
           {filteredProducts.map(p => <ProductCard key={p._id} p={p} />)}
-          {filteredProducts.length === 0 && (
-            <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 60, color: "#444" }}>
-              <CardIcon size={48} color="#333" />
-              <p style={{ marginTop: 12, fontSize: 14 }}>{t.no_products}</p>
-            </div>
-          )}
+          {filteredProducts.length === 0 && <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 60, color: "#444" }}><CardIcon size={48} color="#333" /><p style={{ marginTop: 12, fontSize: 14 }}>{t.no_products}</p></div>}
         </div>
       )}
     </div>
@@ -357,11 +322,7 @@ export default function App() {
           <div style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", marginBottom: 16, border: "1px solid #222" }}>
             {cartItems.map((c, i) => (
               <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderBottom: i < cartItems.length - 1 ? "1px solid #1e1e1e" : "none" }}>
-                {c.product.Imagen_URL ? (
-                  <img src={c.product.Imagen_URL} alt={c.product.Nombre} style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 6, background: "#111", flexShrink: 0 }} />
-                ) : (
-                  <div style={{ width: 44, height: 44, background: "#111", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CardIcon size={22} color="#333" /></div>
-                )}
+                {c.product.Imagen_URL ? <img src={c.product.Imagen_URL} alt={c.product.Nombre} style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 6, background: "#111", flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, background: "#111", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CardIcon size={22} color="#333" /></div>}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#ddd", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.product.Nombre}</div>
                   <div style={{ fontSize: 12, color: GOLD, fontWeight: 700 }}>{(parseFloat(c.product.Precio || 0) * c.qty).toFixed(2)}€</div>
@@ -377,8 +338,7 @@ export default function App() {
           </div>
           <div style={{ background: CARD_BG, borderRadius: 12, padding: "14px 16px", border: "1px solid #222", marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: 800 }}>
-              <span style={{ color: "#888" }}>{t.total}</span>
-              <span style={{ color: GOLD }}>{cartTotal}€</span>
+              <span style={{ color: "#888" }}>{t.total}</span><span style={{ color: GOLD }}>{cartTotal}€</span>
             </div>
           </div>
           <button onClick={() => setOrderOpen(true)} style={{ width: "100%", background: GOLD, color: BLACK, border: "none", borderRadius: 10, padding: "15px", fontSize: 15, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>{t.checkout}</button>
@@ -393,9 +353,7 @@ export default function App() {
       {!adminAuth ? (
         <div style={{ maxWidth: 380, background: CARD_BG, borderRadius: 14, padding: 28, border: "1px solid #222" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <div style={{ width: 80, height: 80, borderRadius: "50%", border: `2px solid ${GOLD}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <UserIcon size={44} color={GOLD} />
-            </div>
+            <div style={{ width: 80, height: 80, borderRadius: "50%", border: `2px solid ${GOLD}`, display: "flex", alignItems: "center", justifyContent: "center" }}><UserIcon size={44} color={GOLD} /></div>
           </div>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#ddd", textAlign: "center", marginBottom: 6 }}>{t.access_admin}</h3>
           <p style={{ fontSize: 12, color: "#555", textAlign: "center", marginBottom: 20 }}>{t.internal}</p>
@@ -408,9 +366,7 @@ export default function App() {
       ) : (
         <div>
           <p style={{ fontSize: 12, color: "#555", marginBottom: 16 }}>{t.orders_count(orders.length)}</p>
-          {orders.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 48, color: "#444", background: CARD_BG, borderRadius: 12 }}>{t.no_orders}</div>
-          ) : (
+          {orders.length === 0 ? <div style={{ textAlign: "center", padding: 48, color: "#444", background: CARD_BG, borderRadius: 12 }}>{t.no_orders}</div> : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
               {orders.map(order => {
                 const orderProds = order.items.map(c => { const p = products.find(x => x._id === c.id); return p ? `${p.Nombre} x${c.qty}` : ""; }).filter(Boolean);
@@ -521,31 +477,19 @@ export default function App() {
               {loading && <div style={{ textAlign: "center", padding: 48, color: "#555" }}>{t.loading}</div>}
               {loadError && <div style={{ background: "#1e0000", color: "#f87171", margin: 16, borderRadius: 10, padding: 14, textAlign: "center", fontSize: 13 }}>{t.error}</div>}
 
-              {/* Product grid mobile - 2 columns */}
               {!loading && !loadError && (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: "14px 12px" }}>
                   {filteredProducts.map(p => {
                     const stock = getStock(p);
                     const inC = inCart(p._id);
                     return (
-                      <div key={p._id} onClick={() => setSelected(p)}
-                        style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
+                      <div key={p._id} onClick={() => setSelected(p)} style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
                         <div style={{ background: "#111", position: "relative", paddingTop: "100%", overflow: "hidden" }}>
                           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {p.Imagen_URL ? (
-                              <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} />
-                            ) : (
-                              <CardIcon size={40} color="#333" />
-                            )}
+                            {p.Imagen_URL ? <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} /> : <CardIcon size={40} color="#333" />}
                           </div>
-                          {p.Rareza && (
-                            <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.85)", border: `1px solid ${RARITY_COLORS[p.Rareza] || GOLD}`, borderRadius: 4, padding: "2px 6px", fontSize: 8, color: RARITY_COLORS[p.Rareza] || GOLD, fontWeight: 700, textTransform: "uppercase" }}>{p.Rareza}</div>
-                          )}
-                          {stock === 0 && (
-                            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ color: "#666", fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{t.out_stock}</span>
-                            </div>
-                          )}
+                          {p.Rareza && <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.85)", border: `1px solid ${RARITY_COLORS[p.Rareza] || GOLD}`, borderRadius: 4, padding: "2px 6px", fontSize: 8, color: RARITY_COLORS[p.Rareza] || GOLD, fontWeight: 700, textTransform: "uppercase" }}>{p.Rareza}</div>}
+                          {stock === 0 && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#666", fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{t.out_stock}</span></div>}
                         </div>
                         <div style={{ padding: "10px 10px" }}>
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#eee", lineHeight: 1.3, marginBottom: 6, minHeight: 32 }}>{p.Nombre}</div>
@@ -561,12 +505,7 @@ export default function App() {
                       </div>
                     );
                   })}
-                  {filteredProducts.length === 0 && (
-                    <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 60, color: "#444" }}>
-                      <CardIcon size={48} color="#333" />
-                      <p style={{ marginTop: 12, fontSize: 14 }}>{t.no_products}</p>
-                    </div>
-                  )}
+                  {filteredProducts.length === 0 && <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 60, color: "#444" }}><CardIcon size={48} color="#333" /><p style={{ marginTop: 12, fontSize: 14 }}>{t.no_products}</p></div>}
                 </div>
               )}
 
@@ -580,6 +519,7 @@ export default function App() {
                 </div>
               )}
 
+              {/* Mobile detail overlay */}
               {selected && (
                 <div style={{ position: "fixed", inset: 0, background: DARK, zIndex: 150, overflow: "auto", paddingBottom: 80 }}>
                   <div style={{ background: BLACK, paddingTop: "env(safe-area-inset-top, 44px)", paddingLeft: 16, paddingRight: 16, paddingBottom: 14, borderBottom: "1px solid #1e1e1e" }}>
@@ -588,23 +528,54 @@ export default function App() {
                       <span style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>{t.detail}</span>
                     </div>
                   </div>
+                  {selected.Imagen_URL && (
+                    <div style={{ width: "100%", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+                      <img src={selected.Imagen_URL} alt={selected.Nombre} style={{ maxWidth: "85%", maxHeight: 400, objectFit: "contain", borderRadius: 8 }} />
+                    </div>
+                  )}
                   <div style={{ padding: "20px 16px" }}>
-                    {selected.Imagen_URL && (
-                      <div style={{ height: 260, background: "#111", borderRadius: 12, overflow: "hidden", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <img src={selected.Imagen_URL} alt={selected.Nombre} style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} />
-                      </div>
-                    )}
-                    <h1 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{selected.Nombre}</h1>
-                    {selected.Rareza && <div style={{ display: "inline-block", border: `1px solid ${GOLD}`, borderRadius: 4, padding: "2px 8px", fontSize: 10, color: GOLD, fontWeight: 700, marginBottom: 14, textTransform: "uppercase", letterSpacing: 1 }}>{selected.Rareza}</div>}
-                    <button style={{ width: "100%", background: inCart(selected._id) ? "#16a34a" : getStock(selected) === 0 ? "#222" : GOLD, color: inCart(selected._id) ? "#fff" : getStock(selected) === 0 ? "#444" : BLACK, border: "none", borderRadius: 10, padding: "14px", fontSize: 14, fontWeight: 800, cursor: getStock(selected) === 0 ? "default" : "pointer", marginBottom: 20, textTransform: "uppercase", letterSpacing: 1 }}
+                    <h1 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 6 }}>{selected.Nombre}</h1>
+                    {selected.Rareza && <div style={{ display: "inline-block", border: `1px solid ${GOLD}`, borderRadius: 4, padding: "2px 8px", fontSize: 10, color: GOLD, fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>{selected.Rareza}</div>}
+                    <div style={{ fontSize: 30, fontWeight: 900, color: GOLD, marginBottom: 16 }}>{parseFloat(selected.Precio || 0).toFixed(2)}€</div>
+                    <button style={{ width: "100%", background: inCart(selected._id) ? "#16a34a" : getStock(selected) === 0 ? "#222" : GOLD, color: inCart(selected._id) ? "#fff" : getStock(selected) === 0 ? "#444" : BLACK, border: "none", borderRadius: 10, padding: "15px", fontSize: 15, fontWeight: 800, cursor: getStock(selected) === 0 ? "default" : "pointer", marginBottom: 20, textTransform: "uppercase", letterSpacing: 1 }}
                       onClick={e => { if (getStock(selected) > 0) addToCart(selected._id, e); }}>
-                      {inCart(selected._id) ? t.in_cart : getStock(selected) === 0 ? t.out_stock : `${t.add_cart} · ${parseFloat(selected.Precio || 0).toFixed(2)}€`}
+                      {inCart(selected._id) ? t.in_cart : getStock(selected) === 0 ? t.out_stock : t.add_cart}
                     </button>
                     {[["Precio", `${parseFloat(selected.Precio || 0).toFixed(2)}€`], [t.series, selected.Serie], ["Categoría", selected.Categoria], [t.stock_label, selected.Stock]].filter(r => r[1]).map(([l, v]) => (
                       <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "11px 0", borderBottom: "1px solid #1e1e1e", fontSize: 14 }}>
                         <span style={{ color: "#555" }}>{l}</span><span style={{ fontWeight: 600, color: "#ddd" }}>{v}</span>
                       </div>
                     ))}
+                    {products.filter(p => p._id !== selected._id).length > 0 && (
+                      <div style={{ marginTop: 32 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 16, textAlign: "center", letterSpacing: 0.5 }}>{t.also_like}</h2>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                          {products.filter(p => p._id !== selected._id).sort(() => Math.random() - 0.5).slice(0, 4).map(p => {
+                            const inC = inCart(p._id);
+                            const stock = getStock(p);
+                            return (
+                              <div key={p._id} onClick={() => setSelected(p)} style={{ background: CARD_BG, borderRadius: 10, overflow: "hidden", border: "1px solid #222", cursor: "pointer" }}>
+                                <div style={{ background: "#111", paddingTop: "100%", position: "relative" }}>
+                                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    {p.Imagen_URL ? <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 6 }} /> : <CardIcon size={32} color="#333" />}
+                                  </div>
+                                </div>
+                                <div style={{ padding: "8px 10px" }}>
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: "#ddd", lineHeight: 1.3, marginBottom: 4, minHeight: 28 }}>{p.Nombre}</div>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13, fontWeight: 900, color: GOLD }}>{parseFloat(p.Precio || 0).toFixed(2)}€</span>
+                                    <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
+                                      style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : GOLD, color: inC ? "#fff" : stock === 0 ? "#444" : BLACK, border: "none", borderRadius: 5, width: 26, height: 26, fontSize: 16, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                      {inC ? "✓" : stock === 0 ? "−" : "+"}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -649,8 +620,7 @@ export default function App() {
                 </div>
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, fontSize: 14, fontWeight: 800 }}>
-                <span style={{ color: "#666" }}>{t.total}</span>
-                <span style={{ color: GOLD }}>{cartTotal}€</span>
+                <span style={{ color: "#666" }}>{t.total}</span><span style={{ color: GOLD }}>{cartTotal}€</span>
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
