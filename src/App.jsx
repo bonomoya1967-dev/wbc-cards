@@ -1,4 +1,4 @@
-  import { useState, useEffect, useRef } from "react";
+   import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -134,32 +134,46 @@ export default function App() {
     const stock = getStock(p);
     const inC = inCart(p._id);
     const rc = RARITY_COLOR[p.Rareza] || C.gray;
+    const isAuto = p.Auto === "TRUE";
+    const isRelic = p.Relic === "TRUE";
+    const isGraded = p.Grading === "TRUE" && p.Empresa_Grading;
+    const isParallel = p.Paralela && p.Paralela !== "Base";
+    const glow = isGraded ? "0 0 18px rgba(201,168,76,0.4), 0 4px 14px rgba(0,0,0,0.6)"
+      : isAuto ? "0 0 14px rgba(201,168,76,0.25), 0 4px 14px rgba(0,0,0,0.6)"
+      : isRelic ? "0 0 14px rgba(167,139,250,0.3), 0 4px 14px rgba(0,0,0,0.6)"
+      : p.Numeracion ? "0 0 10px rgba(204,0,0,0.2), 0 4px 14px rgba(0,0,0,0.6)"
+      : "0 4px 12px rgba(0,0,0,0.4)";
+    const border = inC ? C.gold : isGraded ? C.gold : isAuto ? "rgba(201,168,76,0.5)" : isRelic ? "rgba(167,139,250,0.5)" : p.Numeracion ? "rgba(204,0,0,0.35)" : C.border;
     return (
       <div onClick={() => { setSelected(p); setActiveImg(0); setScreen("product"); window.scrollTo(0, 0); }}
-        style={{ background: C.card, borderRadius: 12, overflow: "hidden", border: "1px solid " + (inC ? C.gold : C.border), cursor: "pointer", display: "flex", flexDirection: "column" }}>
-        <div style={{ background: "#0a0a0a", position: "relative", paddingTop: "120%", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        style={{ background: "linear-gradient(180deg, #1c1c1c 0%, #111 100%)", borderRadius: 12, overflow: "hidden", border: "1px solid " + border, cursor: "pointer", display: "flex", flexDirection: "column", boxShadow: glow }}>
+        <div style={{ background: "#0a0a0a", position: "relative", paddingTop: "140%", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 10 }}>
             {p.Imagen_URL
-              ? <img src={p.Imagen_URL} alt={p.Nombre} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} />
-              : <div style={{ color: "#222", fontSize: 32 }}>🏎</div>
-            }
+              ? <img src={p.Imagen_URL} alt={p.Nombre} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} onError={e => e.target.style.display = "none"} />
+              : <div style={{ color: "#1a1a1a", fontSize: 40 }}>🏎</div>}
           </div>
+          {/* Badges top-left */}
           <div style={{ position: "absolute", top: 8, left: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-            {p.Auto === "TRUE" && <span style={{ background: "rgba(201,168,76,0.9)", color: C.black, fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 1 }}>AUTO</span>}
-            {p.Relic === "TRUE" && <span style={{ background: "rgba(167,139,250,0.9)", color: "#fff", fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 1 }}>RELIC</span>}
+            {isGraded && <span style={{ background: "linear-gradient(135deg, #c9a84c, #e8c96d)", color: "#000", fontSize: 10, fontWeight: 900, padding: "3px 9px", borderRadius: 4, letterSpacing: 1, boxShadow: "0 2px 8px rgba(201,168,76,0.6)" }}>{p.Empresa_Grading} {p.Nota_Grading}</span>}
+            {isAuto && !isGraded && <span style={{ background: "linear-gradient(135deg, #c9a84c, #a07830)", color: "#000", fontSize: 9, fontWeight: 900, padding: "3px 8px", borderRadius: 4, letterSpacing: 1.5, textTransform: "uppercase", boxShadow: "0 2px 8px rgba(201,168,76,0.5)" }}>AUTO</span>}
+            {isRelic && <span style={{ background: "linear-gradient(135deg, #a78bfa, #7c3aed)", color: "#fff", fontSize: 9, fontWeight: 900, padding: "3px 8px", borderRadius: 4, letterSpacing: 1.5, textTransform: "uppercase", boxShadow: "0 2px 8px rgba(167,139,250,0.5)" }}>RELIC</span>}
           </div>
-          {p.Numeracion && <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.85)", border: "1px solid " + rc, borderRadius: 4, padding: "3px 8px", fontSize: 10, color: rc, fontWeight: 800 }}>{p.Numeracion}</div>}
-          {p.Grading === "TRUE" && p.Empresa_Grading && <div style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.85)", borderRadius: 4, padding: "2px 8px", fontSize: 9, color: C.gold, fontWeight: 800 }}>{p.Empresa_Grading} {p.Nota_Grading}</div>}
-          {stock === 0 && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#555", fontSize: 11, fontWeight: 800, letterSpacing: 2 }}>SOLD</span></div>}
+          {/* Numbered badge top-right */}
+          {p.Numeracion && <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.92)", border: "1px solid " + rc, borderRadius: 6, padding: "4px 9px", fontSize: 11, color: rc, fontWeight: 900, boxShadow: "0 0 10px " + rc + "55" }}>{p.Numeracion}</div>}
+          {/* Parallel shimmer bottom */}
+          {isParallel && <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, " + rc + ", transparent)" }} />}
+          {/* Sold overlay */}
+          {stock === 0 && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#555", fontSize: 12, fontWeight: 900, letterSpacing: 3, border: "1px solid #333", padding: "5px 14px", borderRadius: 4 }}>SOLD OUT</span></div>}
         </div>
-        <div style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-          <div style={{ fontSize: 11, color: C.gray, textTransform: "uppercase", letterSpacing: 1 }}>{p.Piloto}</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.white, lineHeight: 1.3, minHeight: 36 }}>{p.Nombre}</div>
-          {p.Paralela && p.Paralela !== "Base" && <div style={{ fontSize: 10, color: rc, fontWeight: 600 }}>{p.Paralela}</div>}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", paddingTop: 10 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: C.gold }}>{parseFloat(p.Precio || 0).toFixed(2)}€</div>
+        <div style={{ padding: "10px 12px", flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: 1.5 }}>{p.Piloto}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.white, lineHeight: 1.3, minHeight: 30 }}>{p.Nombre}</div>
+          {isParallel && <div style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><span style={{ width: 5, height: 5, borderRadius: "50%", background: rc, display: "inline-block" }} /><span style={{ fontSize: 10, color: rc, fontWeight: 700 }}>{p.Paralela}</span></div>}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", paddingTop: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 900, color: C.gold }}>{parseFloat(p.Precio || 0).toFixed(2)}€</div>
             <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
-              style={{ background: inC ? "#16a34a" : stock === 0 ? "#1a1a1a" : C.red, color: "#fff", border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 11, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase" }}>
+              style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : C.red, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase" }}>
               {inC ? "✓" : stock === 0 ? "—" : "Add"}
             </button>
           </div>
@@ -290,9 +304,9 @@ export default function App() {
   const HomeScreen = () => (
     <div style={{ paddingTop: 64 }}>
       {/* HERO */}
-      <div style={{ minHeight: isMobile ? 520 : 620, display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/hero-bg.jpg')", backgroundSize: "cover", backgroundPosition: "center 30%", backgroundRepeat: "no-repeat" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(0,0,0,0.93) 0%, rgba(0,0,0,0.75) 55%, rgba(0,0,0,0.4) 100%)" }} />
+      <div style={{ minHeight: isMobile ? 420 : 520, display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #080808 0%, #1a0000 40%, #0a0005 70%, #080808 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 70% 50%, rgba(204,0,0,0.2) 0%, transparent 60%)" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 200, background: "linear-gradient(to top, rgba(204,0,0,0.12), transparent)" }} />
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, " + C.red + ", " + C.gold + ", " + C.red + ")" }} />
         <div style={{ maxWidth: 1400, margin: "0 auto", padding: isMobile ? "80px 20px 60px" : "100px 40px", position: "relative", zIndex: 1, width: "100%" }}>
