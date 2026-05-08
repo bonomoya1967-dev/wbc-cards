@@ -1,7 +1,7 @@
  import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
-const ADMIN_EMAIL = "javier@wbccards.com";
+const ADMIN_EMAIL = "info@wbccards.com";
 const ADMIN_PASSWORD = "admin2026";
 const LOGO_URI = "/Logo-f1.png";
 const INSTAGRAM_URL = "https://instagram.com/wbccardsf1";
