@@ -13,7 +13,6 @@ const LOGO_URI = "/logo-f1.png";
 
 const getLang = () => (navigator.language || "es").toLowerCase().startsWith("es") ? "es" : "en";
 
-// ── COLECCIONES F1 ────────────────────────────────────────────────────────────
 const F1_COLLECTIONS = [
   { key: "all", label: "Todo", emoji: "🏁" },
   { key: "Topps Chrome 2020", label: "Chrome 2020", emoji: "🔴" },
@@ -35,7 +34,6 @@ const RARITY_COLORS = {
   "Autograph": RED, "Special": GOLD,
 };
 
-// ── LEGAL ─────────────────────────────────────────────────────────────────────
 const DEFAULT_LEGAL = {
   aviso: `AVISO LEGAL\n\nTitular: WBC Cards F1\nDomicilio: España\nEmail: contacto@wbccards.com\n\nEn cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), se informa que este sitio web es propiedad de WBC Cards F1.\n\nEl acceso y uso de este sitio web implica la aceptación plena de las condiciones de uso aquí establecidas.`,
   privacidad: `POLÍTICA DE PRIVACIDAD\n\nEn cumplimiento del RGPD y la LOPDGDD:\n\nRESPONSABLE: WBC Cards F1\nFINALIDAD: Gestión de pedidos y comunicaciones\nLEGITIMACIÓN: Ejecución de contrato y consentimiento\nDESTINATARIOS: No se ceden datos a terceros\nDERECHOS: Acceso, rectificación, supresión escribiendo a contacto@wbccards.com`,
@@ -112,7 +110,6 @@ const T = {
   }
 };
 
-// ── ICONS ─────────────────────────────────────────────────────────────────────
 const CartIcon = ({ size = 24, color = GOLD }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke={color} strokeWidth="1.8" fill="none" strokeLinejoin="round" />
@@ -134,13 +131,10 @@ const F1Icon = ({ size = 24, color = RED }) => (
     <path d="M5 13h14" stroke={color} strokeWidth="1.5" />
   </svg>
 );
-
-// ── LOGO COMPONENT ─────────────────────────────────────────────────────────────
 const Logo = ({ size = 48 }) => (
   <img src={LOGO_URI} alt="WBC Cards F1" style={{ width: size, height: size, objectFit: "contain" }} />
 );
 
-// ── WAVE FOOTER ───────────────────────────────────────────────────────────────
 const WaveFooter = ({ t, onLegal }) => (
   <div style={{ marginTop: 40 }}>
     <svg viewBox="0 0 1440 80" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
@@ -256,7 +250,6 @@ export default function App() {
 
   const updateStatus = (id, status) => { const u = orders.map(o => o.id === id ? { ...o, status } : o); setOrders(u); saveOrders(u); };
   const deleteOrder = (id) => { const u = orders.filter(o => o.id !== id); setOrders(u); saveOrders(u); };
-
   const saveLegalTexts = () => {
     const updated = { ...legal, ...editingLegal };
     setLegal(updated); saveLegal(updated); setLegalSaved(true);
@@ -265,7 +258,6 @@ export default function App() {
 
   const inp = { width: "100%", padding: "11px 14px", border: "1px solid #333", borderRadius: 8, fontSize: 13, outline: "none", background: "#1e1e1e", fontFamily: "inherit", color: "#fff" };
 
-  // ── LEGAL MODAL ──────────────────────────────────────────────────────────────
   const LegalModal = () => {
     if (!legalPage) return null;
     const titles = { aviso: t.legal_aviso, privacidad: t.legal_privacidad, cookies: t.legal_cookies, envios: t.legal_envios, devoluciones: t.legal_devoluciones };
@@ -284,7 +276,6 @@ export default function App() {
     );
   };
 
-  // ── SIDEBAR ──────────────────────────────────────────────────────────────────
   const Sidebar = () => (
     <div style={{ width: 240, background: BLACK, minHeight: "100vh", display: "flex", flexDirection: "column", flexShrink: 0, position: "sticky", top: 0, borderRight: "1px solid #1e1e1e" }}>
       <div style={{ padding: "20px 16px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: "center", gap: 12 }}>
@@ -307,8 +298,6 @@ export default function App() {
             {item.badge > 0 && <span style={{ marginLeft: "auto", background: GOLD, color: BLACK, borderRadius: 10, fontSize: 10, fontWeight: 800, padding: "1px 7px" }}>{item.badge}</span>}
           </div>
         ))}
-
-        {/* Colecciones */}
         <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #1e1e1e" }}>
           <div style={{ color: "#444", fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", padding: "4px 12px", marginBottom: 6 }}>{t.collections}</div>
           {F1_COLLECTIONS.map(col => (
@@ -329,7 +318,6 @@ export default function App() {
     </div>
   );
 
-  // ── PRODUCT CARD ──────────────────────────────────────────────────────────────
   const ProductCard = ({ p }) => {
     const stock = getStock(p);
     const inC = inCart(p._id);
@@ -363,7 +351,6 @@ export default function App() {
     );
   };
 
-  // ── DETAIL PANEL ─────────────────────────────────────────────────────────────
   const DetailPanel = () => (
     <div style={{ width: 300, background: DARK, borderLeft: "1px solid #222", overflow: "auto", flexShrink: 0 }}>
       {!selected ? (
@@ -395,7 +382,6 @@ export default function App() {
     </div>
   );
 
-  // ── CATALOG CONTENT ───────────────────────────────────────────────────────────
   const CatalogContent = () => (
     <div style={{ flex: 1, overflow: "auto", background: DARK }}>
       <div style={{ padding: "16px 20px", background: BLACK, borderBottom: "1px solid #1e1e1e", position: "sticky", top: 0, zIndex: 10 }}>
@@ -419,7 +405,6 @@ export default function App() {
     </div>
   );
 
-  // ── CART CONTENT ──────────────────────────────────────────────────────────────
   const CartContent = () => (
     <div style={{ flex: 1, overflow: "auto", background: DARK, padding: 20 }}>
       <h2 style={{ fontSize: 18, fontWeight: 800, color: GOLD, marginBottom: 16, letterSpacing: 1, textTransform: "uppercase" }}>{t.cart_title}</h2>
@@ -459,7 +444,6 @@ export default function App() {
     </div>
   );
 
-  // ── ADMIN CONTENT ─────────────────────────────────────────────────────────────
   const AdminContent = () => {
     const legalKeys = [
       { key: "aviso", label: t.legal_aviso }, { key: "privacidad", label: t.legal_privacidad },
@@ -471,9 +455,7 @@ export default function App() {
         <h2 style={{ fontSize: 18, fontWeight: 800, color: GOLD, marginBottom: 16, letterSpacing: 1, textTransform: "uppercase" }}>{t.panel_admin}</h2>
         {!adminAuth ? (
           <div style={{ maxWidth: 380, background: CARD_BG, borderRadius: 14, padding: 28, border: "1px solid #222" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-              <Logo size={80} />
-            </div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Logo size={80} /></div>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: "#ddd", textAlign: "center", marginBottom: 6 }}>{t.access_admin}</h3>
             <p style={{ fontSize: 12, color: "#555", textAlign: "center", marginBottom: 20 }}>{t.internal}</p>
             <input style={{ ...inp, marginBottom: 10 }} type="password" placeholder={t.password} value={adminPass} onChange={e => setAdminPass(e.target.value)}
@@ -551,7 +533,6 @@ export default function App() {
     );
   };
 
-  // ── RENDER ────────────────────────────────────────────────────────────────────
   return (
     <div style={{ fontFamily: "'Segoe UI', -apple-system, sans-serif", minHeight: "100vh", background: DARK, color: LIGHT }}>
       <style>{`
@@ -569,7 +550,6 @@ export default function App() {
 
       <LegalModal />
 
-      {/* SPLASH */}
       {screen === "splash" && (
         <div style={{ minHeight: "100vh", background: BLACK, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
           <div style={{ marginBottom: 24 }}><Logo size={140} /></div>
@@ -579,7 +559,6 @@ export default function App() {
         </div>
       )}
 
-      {/* DESKTOP */}
       {screen !== "splash" && !isMobile && (
         <div style={{ display: "flex", minHeight: "100vh" }}>
           <Sidebar />
@@ -591,7 +570,6 @@ export default function App() {
         </div>
       )}
 
-      {/* MOBILE */}
       {screen !== "splash" && isMobile && (
         <div style={{ paddingBottom: 80, background: DARK, minHeight: "100vh" }}>
           <div style={{ background: BLACK, paddingTop: "env(safe-area-inset-top, 44px)", paddingBottom: 10, paddingLeft: 16, paddingRight: 16, borderBottom: "1px solid #1e1e1e" }}>
@@ -619,7 +597,6 @@ export default function App() {
                   <input style={{ ...inp, paddingLeft: 36, background: "#0f0f0f" }} placeholder={t.search_ph} value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
-              {/* Colecciones scroll horizontal */}
               <div style={{ display: "flex", gap: 8, padding: "10px 16px", overflowX: "auto", background: BLACK, borderBottom: "1px solid #1e1e1e" }}>
                 {F1_COLLECTIONS.map(col => (
                   <button key={col.key} onClick={() => setColFilter(col.key)}
@@ -746,7 +723,6 @@ export default function App() {
         </div>
       )}
 
-      {/* MOBILE NAV */}
       {screen !== "splash" && isMobile && (
         <div className="bottom-bar">
           <div className="nav-item" onClick={() => setScreen("catalog")}>
@@ -766,7 +742,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {/* ORDER MODAL */}
+
       {orderOpen && (
         <div className="modal-overlay" onClick={() => setOrderOpen(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
