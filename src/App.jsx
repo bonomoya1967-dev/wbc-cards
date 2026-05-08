@@ -1,10 +1,7 @@
  import { useState, useEffect } from "react";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-// Reemplaza con tu URL de Google Sheets publicado
-  
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
-
 const ADMIN_EMAIL = "tu@email.com";
 const ADMIN_PASSWORD = "admin2026";
 
@@ -12,8 +9,6 @@ const BLACK = "#0a0a0a";
 const DARK = "#141414";
 const CARD_BG = "#1a1a1a";
 const GOLD = "#c9a84c";
-const GOLD2 = "#e8c96d";
-const GRAY = "#888";
 const LIGHT = "#f5f5f5";
 
 const getLang = () => (navigator.language || "es").toLowerCase().startsWith("es") ? "es" : "en";
@@ -32,7 +27,6 @@ const T = {
     cart_title: "Tu cesta", cart_empty: "Tu cesta está vacía",
     cart_empty_msg: "Añade productos del catálogo", see_catalog: "Ver catálogo",
     checkout: "Tramitar pedido →", total: "Total",
-    remove: "×", units: "ud.",
     order_title: "Datos del pedido",
     order_sub: "Completa tus datos y te contactamos para el pago.",
     name_l: "Nombre *", email_l: "Email *", tel_l: "Teléfono", address_l: "Dirección de envío *",
@@ -43,7 +37,7 @@ const T = {
     success: (n, t) => `✓ Pedido confirmado · ${n} producto${n > 1 ? "s" : ""} · ${t}€. Te contactamos en breve.`,
     access_admin: "Acceso Admin", internal: "Solo uso interno.",
     enter: "Entrar", wrong_pass: "Contraseña incorrecta.", password: "Contraseña",
-    orders: "Pedidos", no_orders: "No hay pedidos",
+    no_orders: "No hay pedidos",
     pending: "Pendiente", sent: "Enviado", paid: "Pagado",
     mark_sent: "Marcar enviado", mark_paid: "✓ Pagado", delete_btn: "Eliminar",
     orders_count: (n) => `${n} pedido${n !== 1 ? "s" : ""}`,
@@ -52,8 +46,7 @@ const T = {
     select_detail: "Selecciona un producto",
     in_cart: "✓ En cesta",
     email_subject: (n) => `Nuevo pedido - ${n}`,
-    email_body: (o, prods, total) =>
-      `Nuevo pedido\n\nCliente: ${o.nombre}\nEmail: ${o.email}\nTeléfono: ${o.tel || "No indicado"}\nDirección: ${o.address}\n\nProductos:\n${prods}\nTotal: ${total}€\n\nID: ${o.id}`,
+    email_body: (o, prods, total) => `Nuevo pedido\n\nCliente: ${o.nombre}\nEmail: ${o.email}\nTeléfono: ${o.tel || "No indicado"}\nDirección: ${o.address}\n\nProductos:\n${prods}\nTotal: ${total}€\n\nID: ${o.id}`,
   },
   en: {
     splash_sub: "TCG Cards · Pokémon · F1 · More",
@@ -68,7 +61,6 @@ const T = {
     cart_title: "Your cart", cart_empty: "Your cart is empty",
     cart_empty_msg: "Add products from the catalogue", see_catalog: "View catalogue",
     checkout: "Checkout →", total: "Total",
-    remove: "×", units: "units",
     order_title: "Order details",
     order_sub: "Fill in your details and we'll contact you for payment.",
     name_l: "Name *", email_l: "Email *", tel_l: "Phone", address_l: "Shipping address *",
@@ -79,7 +71,7 @@ const T = {
     success: (n, t) => `✓ Order confirmed · ${n} product${n > 1 ? "s" : ""} · €${t}. We'll contact you shortly.`,
     access_admin: "Admin Access", internal: "Internal use only.",
     enter: "Sign in", wrong_pass: "Wrong password.", password: "Password",
-    orders: "Orders", no_orders: "No orders yet",
+    no_orders: "No orders yet",
     pending: "Pending", sent: "Shipped", paid: "Paid",
     mark_sent: "Mark shipped", mark_paid: "✓ Mark paid", delete_btn: "Delete",
     orders_count: (n) => `${n} order${n !== 1 ? "s" : ""}`,
@@ -88,8 +80,7 @@ const T = {
     select_detail: "Select a product",
     in_cart: "✓ In cart",
     email_subject: (n) => `New order - ${n}`,
-    email_body: (o, prods, total) =>
-      `New order\n\nClient: ${o.nombre}\nEmail: ${o.email}\nPhone: ${o.tel || "Not provided"}\nAddress: ${o.address}\n\nProducts:\n${prods}\nTotal: €${total}\n\nID: ${o.id}`,
+    email_body: (o, prods, total) => `New order\n\nClient: ${o.nombre}\nEmail: ${o.email}\nPhone: ${o.tel || "Not provided"}\nAddress: ${o.address}\n\nProducts:\n${prods}\nTotal: €${total}\n\nID: ${o.id}`,
   }
 };
 
@@ -190,10 +181,7 @@ export default function App() {
   };
 
   const removeFromCart = (id) => setCart(prev => prev.filter(c => c.id !== id));
-  const changeQty = (id, delta) => setCart(prev =>
-    prev.map(c => c.id === id ? { ...c, qty: Math.max(1, c.qty + delta) } : c)
-  );
-
+  const changeQty = (id, delta) => setCart(prev => prev.map(c => c.id === id ? { ...c, qty: Math.max(1, c.qty + delta) } : c));
   const inCart = (id) => cart.some(c => c.id === id);
   const getStock = (p) => parseInt(p.Stock || 0);
 
@@ -204,9 +192,7 @@ export default function App() {
     const newOrder = { id: Date.now(), ...orderData, items: [...cart], total: cartTotal, createdAt: Date.now(), status: "pending" };
     const updated = [...orders, newOrder];
     setOrders(updated); saveOrders(updated);
-    const subject = encodeURIComponent(t.email_subject(orderData.nombre));
-    const body = encodeURIComponent(t.email_body(orderData, prods, cartTotal));
-    window.open(`mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`);
+    window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(t.email_subject(orderData.nombre))}&body=${encodeURIComponent(t.email_body(orderData, prods, cartTotal))}`);
     setOrderOpen(false); setOrderData({ nombre: "", email: "", tel: "", address: "" }); setOrderError("");
     setCart([]);
     setSuccessMsg(t.success(cartItems.length, cartTotal));
@@ -217,11 +203,7 @@ export default function App() {
   const updateStatus = (id, status) => { const u = orders.map(o => o.id === id ? { ...o, status } : o); setOrders(u); saveOrders(u); };
   const deleteOrder = (id) => { const u = orders.filter(o => o.id !== id); setOrders(u); saveOrders(u); };
 
-  const inp = {
-    width: "100%", padding: "11px 14px", border: "1px solid #333",
-    borderRadius: 8, fontSize: 13, outline: "none",
-    background: "#1e1e1e", fontFamily: "inherit", color: "#fff"
-  };
+  const inp = { width: "100%", padding: "11px 14px", border: "1px solid #333", borderRadius: 8, fontSize: 13, outline: "none", background: "#1e1e1e", fontFamily: "inherit", color: "#fff" };
 
   const Sidebar = () => (
     <div style={{ width: 230, background: BLACK, minHeight: "100vh", display: "flex", flexDirection: "column", flexShrink: 0, position: "sticky", top: 0, borderRight: "1px solid #222" }}>
@@ -240,8 +222,7 @@ export default function App() {
           { id: "cart", icon: <CartIcon size={18} color={screen === "cart" ? GOLD : "#555"} />, label: t.cart_nav, badge: cartCount },
           { id: "admin", icon: <UserIcon size={18} color={screen === "admin" ? GOLD : "#555"} />, label: t.admin },
         ].map(item => (
-          <div key={item.id}
-            onClick={() => { setScreen(item.id); if (item.id === "admin") { setAdminAuth(false); setAdminPass(""); } }}
+          <div key={item.id} onClick={() => { setScreen(item.id); if (item.id === "admin") { setAdminAuth(false); setAdminPass(""); } }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, marginBottom: 4, cursor: "pointer", background: screen === item.id ? "#1e1e1e" : "transparent", borderLeft: screen === item.id ? `2px solid ${GOLD}` : "2px solid transparent" }}>
             {item.icon}
             <span style={{ color: screen === item.id ? GOLD : "#666", fontSize: 13, fontWeight: screen === item.id ? 700 : 400 }}>{item.label}</span>
@@ -269,20 +250,15 @@ export default function App() {
     const inC = inCart(p._id);
     const rarityColor = RARITY_COLORS[p.Rareza] || GOLD;
     return (
-      <div onClick={() => setSelected(p)}
-        style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
+      <div onClick={() => setSelected(p)} style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 180, background: "#111", overflow: "hidden", position: "relative", flexShrink: 0 }}>
           {p.Imagen_URL ? (
             <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} />
           ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-              <CardIcon size={48} color="#333" />
-            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><CardIcon size={48} color="#333" /></div>
           )}
           {p.Rareza && (
-            <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: `1px solid ${rarityColor}`, borderRadius: 4, padding: "2px 7px", fontSize: 9, color: rarityColor, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
-              {p.Rareza}
-            </div>
+            <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: `1px solid ${rarityColor}`, borderRadius: 4, padding: "2px 7px", fontSize: 9, color: rarityColor, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>{p.Rareza}</div>
           )}
           {stock === 0 && (
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -384,9 +360,7 @@ export default function App() {
                 {c.product.Imagen_URL ? (
                   <img src={c.product.Imagen_URL} alt={c.product.Nombre} style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 6, background: "#111", flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: 44, height: 44, background: "#111", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <CardIcon size={22} color="#333" />
-                  </div>
+                  <div style={{ width: 44, height: 44, background: "#111", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CardIcon size={22} color="#333" /></div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#ddd", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.product.Nombre}</div>
@@ -407,10 +381,7 @@ export default function App() {
               <span style={{ color: GOLD }}>{cartTotal}€</span>
             </div>
           </div>
-          <button onClick={() => setOrderOpen(true)}
-            style={{ width: "100%", background: GOLD, color: BLACK, border: "none", borderRadius: 10, padding: "15px", fontSize: 15, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>
-            {t.checkout}
-          </button>
+          <button onClick={() => setOrderOpen(true)} style={{ width: "100%", background: GOLD, color: BLACK, border: "none", borderRadius: 10, padding: "15px", fontSize: 15, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>{t.checkout}</button>
         </>
       )}
     </div>
@@ -428,14 +399,11 @@ export default function App() {
           </div>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "#ddd", textAlign: "center", marginBottom: 6 }}>{t.access_admin}</h3>
           <p style={{ fontSize: 12, color: "#555", textAlign: "center", marginBottom: 20 }}>{t.internal}</p>
-          <input style={{ ...inp, marginBottom: 10 }} type="password" placeholder={t.password}
-            value={adminPass} onChange={e => setAdminPass(e.target.value)}
+          <input style={{ ...inp, marginBottom: 10 }} type="password" placeholder={t.password} value={adminPass} onChange={e => setAdminPass(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") { adminPass === ADMIN_PASSWORD ? (setAdminAuth(true), setAdminError("")) : setAdminError(t.wrong_pass); }}} />
           {adminError && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 10 }}>{adminError}</p>}
           <button style={{ width: "100%", background: GOLD, color: BLACK, border: "none", borderRadius: 8, padding: 12, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase", letterSpacing: 1 }}
-            onClick={() => { adminPass === ADMIN_PASSWORD ? (setAdminAuth(true), setAdminError("")) : setAdminError(t.wrong_pass); }}>
-            {t.enter}
-          </button>
+            onClick={() => { adminPass === ADMIN_PASSWORD ? (setAdminAuth(true), setAdminError("")) : setAdminError(t.wrong_pass); }}>{t.enter}</button>
         </div>
       ) : (
         <div>
@@ -462,12 +430,8 @@ export default function App() {
                       <div style={{ fontSize: 13, fontWeight: 800, color: GOLD, marginTop: 6 }}>{order.total}€</div>
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      {order.status === "pending" && (
-                        <button onClick={() => updateStatus(order.id, "sent")} style={{ flex: 2, background: "#1e3a5f", color: "#60a5fa", border: "1px solid #2563eb", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t.mark_sent}</button>
-                      )}
-                      {order.status === "sent" && (
-                        <button onClick={() => updateStatus(order.id, "paid")} style={{ flex: 2, background: "#14532d", color: "#4ade80", border: "1px solid #16a34a", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t.mark_paid}</button>
-                      )}
+                      {order.status === "pending" && <button onClick={() => updateStatus(order.id, "sent")} style={{ flex: 2, background: "#1e3a5f", color: "#60a5fa", border: "1px solid #2563eb", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t.mark_sent}</button>}
+                      {order.status === "sent" && <button onClick={() => updateStatus(order.id, "paid")} style={{ flex: 2, background: "#14532d", color: "#4ade80", border: "1px solid #16a34a", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t.mark_paid}</button>}
                       <button onClick={() => deleteOrder(order.id)} style={{ flex: 1, background: "#1e0000", color: "#f87171", border: "1px solid #7f1d1d", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{t.delete_btn}</button>
                     </div>
                   </div>
@@ -492,24 +456,17 @@ export default function App() {
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 1px solid #1e1e1e; display: flex; padding-bottom: env(safe-area-inset-bottom, 16px); padding-top: 10px; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px; }
         .nav-label { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
-        .row-item { background: ${CARD_BG}; padding: 13px 16px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .row-item:active { background: #1e1e1e; }
         .cart-bar { position: fixed; bottom: 80px; left: 0; right: 0; background: ${GOLD}; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 90; }
       `}</style>
 
       {screen === "splash" && (
         <div style={{ minHeight: "100vh", background: BLACK, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
           <div style={{ marginBottom: 24 }}><CardIcon size={72} /></div>
-          <div style={{ marginBottom: 8 }}>
-            <span style={{ color: GOLD, fontSize: 42, fontWeight: 900, letterSpacing: 4, textTransform: "uppercase" }}>WBC</span>
-          </div>
+          <span style={{ color: GOLD, fontSize: 42, fontWeight: 900, letterSpacing: 4, textTransform: "uppercase" }}>WBC</span>
           <div style={{ color: "#333", fontSize: 12, letterSpacing: 6, textTransform: "uppercase", marginBottom: 12 }}>CARDS</div>
           <div style={{ width: 40, height: 1, background: GOLD, marginBottom: 16 }} />
           <p style={{ color: "#555", fontSize: 13, marginBottom: 56, textAlign: "center", letterSpacing: 1 }}>{t.splash_sub}</p>
-          <button onClick={() => setScreen("catalog")}
-            style={{ background: GOLD, color: BLACK, border: "none", borderRadius: 4, padding: "16px 40px", fontSize: 13, fontWeight: 800, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase" }}>
-            {t.splash_btn}
-          </button>
+          <button onClick={() => setScreen("catalog")} style={{ background: GOLD, color: BLACK, border: "none", borderRadius: 4, padding: "16px 40px", fontSize: 13, fontWeight: 800, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase" }}>{t.splash_btn}</button>
         </div>
       )}
 
@@ -563,32 +520,56 @@ export default function App() {
               {successMsg && <div style={{ background: "#14532d", color: "#86efac", padding: "10px 16px", fontSize: 13 }}>{successMsg}</div>}
               {loading && <div style={{ textAlign: "center", padding: 48, color: "#555" }}>{t.loading}</div>}
               {loadError && <div style={{ background: "#1e0000", color: "#f87171", margin: 16, borderRadius: 10, padding: 14, textAlign: "center", fontSize: 13 }}>{t.error}</div>}
-              {!loading && !loadError && filteredProducts.map(p => {
-                const stock = getStock(p);
-                const inC = inCart(p._id);
-                return (
-                  <div key={p._id} className="row-item" onClick={() => setSelected(p)}>
-                    {p.Imagen_URL ? (
-                      <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 6, background: "#111", flexShrink: 0 }} />
-                    ) : (
-                      <div style={{ width: 44, height: 44, background: "#111", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <CardIcon size={22} color="#333" />
+
+              {/* Product grid mobile - 2 columns */}
+              {!loading && !loadError && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: "14px 12px" }}>
+                  {filteredProducts.map(p => {
+                    const stock = getStock(p);
+                    const inC = inCart(p._id);
+                    return (
+                      <div key={p._id} onClick={() => setSelected(p)}
+                        style={{ background: CARD_BG, borderRadius: 12, overflow: "hidden", border: `1px solid ${inC ? GOLD : "#222"}`, cursor: "pointer", display: "flex", flexDirection: "column" }}>
+                        <div style={{ background: "#111", position: "relative", paddingTop: "100%", overflow: "hidden" }}>
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {p.Imagen_URL ? (
+                              <img src={p.Imagen_URL} alt={p.Nombre} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8 }} onError={e => e.target.style.display = "none"} />
+                            ) : (
+                              <CardIcon size={40} color="#333" />
+                            )}
+                          </div>
+                          {p.Rareza && (
+                            <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(0,0,0,0.85)", border: `1px solid ${RARITY_COLORS[p.Rareza] || GOLD}`, borderRadius: 4, padding: "2px 6px", fontSize: 8, color: RARITY_COLORS[p.Rareza] || GOLD, fontWeight: 700, textTransform: "uppercase" }}>{p.Rareza}</div>
+                          )}
+                          {stock === 0 && (
+                            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ color: "#666", fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{t.out_stock}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ padding: "10px 10px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#eee", lineHeight: 1.3, marginBottom: 6, minHeight: 32 }}>{p.Nombre}</div>
+                          {p.Serie && <div style={{ fontSize: 10, color: "#555", marginBottom: 6 }}>{p.Serie}</div>}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ fontSize: 15, fontWeight: 900, color: GOLD }}>{parseFloat(p.Precio || 0).toFixed(2)}€</div>
+                            <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
+                              style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : GOLD, color: inC ? "#fff" : stock === 0 ? "#444" : BLACK, border: "none", borderRadius: 6, width: 32, height: 32, fontSize: 18, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              {inC ? "✓" : stock === 0 ? "−" : "+"}
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#ddd", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.Nombre}</div>
-                      <div style={{ fontSize: 11, color: "#555" }}>{p.Categoria}{p.Serie ? ` · ${p.Serie}` : ""}{p.Rareza ? ` · ${p.Rareza}` : ""}</div>
+                    );
+                  })}
+                  {filteredProducts.length === 0 && (
+                    <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 60, color: "#444" }}>
+                      <CardIcon size={48} color="#333" />
+                      <p style={{ marginTop: 12, fontSize: 14 }}>{t.no_products}</p>
                     </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: GOLD, marginBottom: 4 }}>{parseFloat(p.Precio || 0).toFixed(2)}€</div>
-                      <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
-                        style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : GOLD, color: inC ? "#fff" : stock === 0 ? "#444" : BLACK, border: "none", borderRadius: 5, padding: "4px 10px", fontSize: 10, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase" }}>
-                        {inC ? "✓" : stock === 0 ? "-" : "+"}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+              )}
+
               {cartCount > 0 && (
                 <div className="cart-bar">
                   <div>
@@ -598,6 +579,7 @@ export default function App() {
                   <button onClick={() => setScreen("cart")} style={{ background: BLACK, color: GOLD, border: "none", borderRadius: 6, padding: "9px 18px", fontWeight: 800, fontSize: 12, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>{t.checkout}</button>
                 </div>
               )}
+
               {selected && (
                 <div style={{ position: "fixed", inset: 0, background: DARK, zIndex: 150, overflow: "auto", paddingBottom: 80 }}>
                   <div style={{ background: BLACK, paddingTop: "env(safe-area-inset-top, 44px)", paddingLeft: 16, paddingRight: 16, paddingBottom: 14, borderBottom: "1px solid #1e1e1e" }}>
@@ -608,7 +590,7 @@ export default function App() {
                   </div>
                   <div style={{ padding: "20px 16px" }}>
                     {selected.Imagen_URL && (
-                      <div style={{ height: 220, background: "#111", borderRadius: 12, overflow: "hidden", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ height: 260, background: "#111", borderRadius: 12, overflow: "hidden", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <img src={selected.Imagen_URL} alt={selected.Nombre} style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }} />
                       </div>
                     )}
