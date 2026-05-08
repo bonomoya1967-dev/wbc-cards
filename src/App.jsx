@@ -245,7 +245,7 @@ export default function App() {
           </div>
           <div>
             <div style={{ color:C.white, fontWeight:700, fontSize:11, letterSpacing:2, textTransform:"uppercase", marginBottom:12 }}>Contacto</div>
-            <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📧 javier@wbccards.com</div>
+            <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📧 info@wbccards.com</div>
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>📱 @wbccardsf1</div>
             <div style={{ color:"#555", fontSize:12, marginBottom:8 }}>🛒 ebay.es/str/wildbonocards</div>
             <div style={{ color:"#555", fontSize:12 }}>🌍 España · Europa</div>
