@@ -74,6 +74,7 @@ export default function App() {
   const [activeImg, setActiveImg] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const searchRef = useRef(null);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     const r = () => setIsMobile(window.innerWidth < 1024);
@@ -194,7 +195,7 @@ export default function App() {
   };
 
   const Navbar = () => {
-    const [searchFocused, setSearchFocused] = useState(false);
+     
     const searchResults = search.length > 1
       ? products.filter(p => ["Nombre","Piloto","Equipo","Año","Numeracion","Serie","Paralela","Grading","Nota_Grading"].some(k => (p[k]||"").toLowerCase().includes(search.toLowerCase()))).slice(0, 6)
       : [];
