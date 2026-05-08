@@ -233,7 +233,7 @@ export default function App() {
                 style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.white, fontSize: 13, fontFamily: "inherit", height: "100%" }}
                 placeholder={isMobile ? "Search cards..." : "Search driver, team, year, /10, PSA 10, auto..."}
                 value={search}
-                onChange={e => { setSearch(e.target.value); if (e.target.value) setScreen("catalog"); }}
+                onChange={e => { setSearch(e.target.value); 
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
                 onKeyDown={e => e.key === "Escape" && (setSearch(""), setSearchFocused(false))} />
