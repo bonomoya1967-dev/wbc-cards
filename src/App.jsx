@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef } from "react";
+  import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -616,130 +616,153 @@ export default function App() {
     const rc = RARITY_COLOR[selected.Rareza] || C.gray;
     const isConsignment = selected.Consignment === "TRUE";
 
-    // Premium value fields — highlight in gold
-    const goldFields = ["Grading", "Numbered", "PSA Population", "Parallel"];
-
     return (
       <div style={{ paddingTop: isMobile ? 56 : 106, background: C.dark }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 16px 60px" : "40px 40px 80px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "20px 16px 60px" : "36px 40px 80px" }}>
 
           {/* Breadcrumb */}
           <button onClick={() => setScreen("catalog")}
-            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "#444", cursor: "pointer", marginBottom: 32, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", fontFamily: "inherit" }}>
+            style={{ background: "none", border: "none", color: "#444", cursor: "pointer", marginBottom: 28, fontSize: 11, letterSpacing: 2, textTransform: "uppercase", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
             ← Collection
           </button>
 
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 32 : 56, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 28 : 52, alignItems: "start" }}>
 
-            {/* LEFT — Image gallery */}
-            <div>
-              {/* Main image — gallery display */}
-              <div style={{
-                background: "radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 70%)",
-                borderRadius: 16,
-                overflow: "hidden",
-                position: "relative",
-                paddingTop: "115%",
-                marginBottom: 12,
-                boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)",
-              }}>
-                <div style={{ position: "absolute", inset: "8%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {imgs[activeImg]
-                    ? <img src={imgs[activeImg]} alt={selected.Nombre}
-                        style={{ maxWidth: "88%", maxHeight: "88%", objectFit: "contain", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.6))" }} />
-                    : <div style={{ color: "#1a1a1a", fontSize: 48 }}>🏎</div>
-                  }
-                </div>
-                {imgs[activeImg] && (
-                  <button onClick={() => setZoomImg(imgs[activeImg])}
-                    style={{ position: "absolute", bottom: 14, right: 14, background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, color: "#555", cursor: "pointer", padding: "8px 10px", fontSize: 13, fontFamily: "inherit", backdropFilter: "blur(4px)" }}>
-                    ⊕
-                  </button>
-                )}
-              </div>
+            {/* LEFT — Thumbnails vertical + main image */}
+            <div style={{ display: "flex", gap: 12 }}>
 
-              {/* Thumbnails */}
-              {imgs.length > 1 && (
-                <div style={{ display: "flex", gap: 8 }}>
+              {/* Thumbnails column — left side, desktop only */}
+              {!isMobile && imgs.length > 1 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
                   {imgs.map((img, i) => (
                     <div key={i} onClick={() => setActiveImg(i)}
-                      style={{ width: 60, height: 76, background: "#0d0d0d", borderRadius: 8, overflow: "hidden", cursor: "pointer", border: "1px solid " + (i === activeImg ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: i === activeImg ? 1 : 0.5, transition: "opacity 0.2s, border-color 0.2s" }}>
-                      <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 6 }} />
+                      style={{ width: 56, height: 70, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (i === activeImg ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: i === activeImg ? 1 : 0.45, transition: "all 0.2s" }}>
+                      <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 5 }} />
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* Main image */}
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  background: "radial-gradient(ellipse at 50% 40%, #1c1c1c 0%, #0a0a0a 75%)",
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  position: "relative",
+                  paddingTop: "125%",
+                  boxShadow: "0 24px 64px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.03)",
+                }}>
+                  <div style={{ position: "absolute", inset: "6%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {imgs[activeImg]
+                      ? <img src={imgs[activeImg]} alt={selected.Nombre}
+                          style={{ maxWidth: "92%", maxHeight: "92%", objectFit: "contain", filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.7))" }} />
+                      : <div style={{ color: "#1a1a1a", fontSize: 48 }}>🏎</div>
+                    }
+                  </div>
+                  {imgs[activeImg] && (
+                    <button onClick={() => setZoomImg(imgs[activeImg])}
+                      style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.65)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, color: "#555", cursor: "pointer", padding: "8px 10px", fontSize: 14, fontFamily: "inherit" }}>
+                      ⊕
+                    </button>
+                  )}
+                </div>
+
+                {/* Thumbnails row — mobile only */}
+                {isMobile && imgs.length > 1 && (
+                  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                    {imgs.map((img, i) => (
+                      <div key={i} onClick={() => setActiveImg(i)}
+                        style={{ width: 52, height: 66, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (i === activeImg ? C.gold : "rgba(255,255,255,0.06)"), opacity: i === activeImg ? 1 : 0.45 }}>
+                        <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 4 }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* RIGHT — Info */}
             <div>
               {/* Badges */}
-              <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
-                {isConsignment && (
-                  <span style={{ background: "transparent", border: "1px solid rgba(201,168,76,0.35)", color: "rgba(201,168,76,0.8)", fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>◈ Brokered Sale</span>
-                )}
-                {selected.Auto === "TRUE" && <span style={{ background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.25)", color: C.gold, fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>Autograph</span>}
-                {selected.Relic === "TRUE" && <span style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.25)", color: "#a78bfa", fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>Relic</span>}
-                {selected.Numeracion && <span style={{ background: "transparent", border: "1px solid " + rc + "55", color: rc, fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 3, letterSpacing: 1 }}>{selected.Numeracion}</span>}
+              <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+                {selected.Auto === "TRUE" && <span style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: C.gold, fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>Autograph</span>}
+                {selected.Relic === "TRUE" && <span style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.3)", color: "#a78bfa", fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>Relic</span>}
+                {selected.Numeracion && <span style={{ background: "transparent", border: "1px solid " + rc + "55", color: rc, fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 3, letterSpacing: 1 }}>{selected.Numeracion}</span>}
+                {isConsignment && <span style={{ background: "transparent", border: "1px solid rgba(201,168,76,0.3)", color: "rgba(201,168,76,0.7)", fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 3, textTransform: "uppercase", letterSpacing: 2 }}>◈ Brokered Sale</span>}
               </div>
 
-              {/* Driver / Team */}
-              <div style={{ color: "#444", fontSize: 11, textTransform: "uppercase", letterSpacing: 3, marginBottom: 10 }}>
+              {/* Driver · Team · Year */}
+              <div style={{ color: "#555", fontSize: 11, textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>
                 {[selected.Piloto, selected.Equipo, selected.Año].filter(Boolean).join(" · ")}
               </div>
 
               {/* Title */}
-              <h1 style={{ color: C.white, fontSize: isMobile ? 20 : 24, fontWeight: 800, marginBottom: 6, lineHeight: 1.3, maxWidth: 420, letterSpacing: -0.3 }}>
+              <h1 style={{ color: C.white, fontSize: isMobile ? 20 : 26, fontWeight: 800, marginBottom: 4, lineHeight: 1.25, maxWidth: 400, letterSpacing: -0.3 }}>
                 {selected.Nombre}
               </h1>
 
-              {/* Parallel */}
-              {selected.Paralela && selected.Paralela !== "Base" && (
-                <div style={{ color: rc, fontSize: 12, fontWeight: 600, marginBottom: 20, letterSpacing: 0.5 }}>{selected.Paralela}</div>
-              )}
+              {/* Series */}
+              {selected.Serie && <div style={{ color: C.gold, fontSize: 12, fontWeight: 600, marginBottom: 20, opacity: 0.7 }}>{selected.Serie}</div>}
 
-              {/* Price — protagonist */}
-              <div style={{ marginBottom: 28, paddingBottom: 28, borderBottom: "1px solid #1a1a1a" }}>
-                <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>Price</div>
-                <div style={{ fontSize: isMobile ? 38 : 46, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
-                  {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 20, marginLeft: 4, fontWeight: 600, color: "rgba(201,168,76,0.6)" }}>€</span>
+              {/* Price */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>Price</div>
+                <div style={{ fontSize: isMobile ? 40 : 48, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
+                  {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 18, marginLeft: 3, fontWeight: 500, color: "rgba(201,168,76,0.5)" }}>€</span>
                 </div>
               </div>
 
-              {/* Consignment notice — refined */}
+              {/* Consignment block */}
               {isConsignment && (
-                <div style={{ borderLeft: "2px solid rgba(201,168,76,0.3)", paddingLeft: 14, marginBottom: 24 }}>
-                  <div style={{ color: "rgba(201,168,76,0.7)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, marginBottom: 5 }}>◈ Consignment Service</div>
-                  <p style={{ color: "#555", fontSize: 12, lineHeight: 1.8, margin: 0 }}>
-                    This card is offered through the WBC Cards Consignment Service. Availability is subject to seller confirmation before final purchase validation.
-                  </p>
+                <div style={{ background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 8, padding: "14px 16px", marginBottom: 16 }}>
+                  <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 6 }}>◈ WBC Cards Consignment Service</div>
+                  <p style={{ color: "#666", fontSize: 12, lineHeight: 1.75, margin: 0 }}>This card is offered through the WBC Cards Consignment Service. Availability is subject to seller confirmation before final purchase validation.</p>
                 </div>
               )}
 
               {/* CTA */}
               {isConsignment ? (
-                <button onClick={() => setScreen("consignment")}
-                  style={{ width: "100%", background: "#0a0a0a", color: C.gold, border: "1px solid rgba(201,168,76,0.35)", borderRadius: 6, padding: "13px 24px", fontSize: 12, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3, marginBottom: 12, fontFamily: "inherit", transition: "border-color 0.3s" }}
-                  onMouseEnter={e => { e.target.style.borderColor = "rgba(201,168,76,0.7)"; e.target.style.boxShadow = "0 0 20px rgba(201,168,76,0.08)"; }}
-                  onMouseLeave={e => { e.target.style.borderColor = "rgba(201,168,76,0.35)"; e.target.style.boxShadow = "none"; }}>
-                  ◈ Reserve Interest
-                </button>
+                <>
+                  <button onClick={() => setScreen("consignment")}
+                    style={{ width: "100%", background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "14px 24px", fontSize: 13, fontWeight: 900, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3, marginBottom: 10, fontFamily: "inherit", boxShadow: "0 4px 20px rgba(204,0,0,0.35)" }}>
+                    Reserve Interest
+                  </button>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20, color: "#444", fontSize: 11 }}>
+                    <span>🔒</span>
+                    <span>No payment required</span>
+                    <span style={{ color: "#2a2a2a" }}>·</span>
+                    <span>Seller confirmation before purchase</span>
+                  </div>
+                </>
               ) : (
-                <button onClick={e => { if (stock > 0) addToCart(selected._id, e); }}
-                  style={{ width: "100%", background: inC ? "#16a34a" : stock === 0 ? "#111" : C.red, color: "#fff", border: "none", borderRadius: 6, padding: "13px 24px", fontSize: 13, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 12, fontFamily: "inherit", boxShadow: (!inC && stock > 0) ? "0 4px 20px rgba(204,0,0,0.3)" : "none" }}>
-                  {inC ? "✓ In cart" : stock === 0 ? "Out of stock" : "Add to cart"}
-                </button>
-              )}
-              {inC && !isConsignment && (
-                <button onClick={() => setScreen("cart")}
-                  style={{ width: "100%", background: "transparent", color: "#555", border: "1px solid #1e1e1e", borderRadius: 6, padding: "11px 24px", fontSize: 12, fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 24, fontFamily: "inherit" }}>
-                  View cart →
-                </button>
+                <>
+                  <button onClick={e => { if (stock > 0) addToCart(selected._id, e); }}
+                    style={{ width: "100%", background: inC ? "#16a34a" : stock === 0 ? "#111" : C.red, color: "#fff", border: "none", borderRadius: 8, padding: "14px 24px", fontSize: 13, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 10, fontFamily: "inherit", boxShadow: (!inC && stock > 0) ? "0 4px 20px rgba(204,0,0,0.3)" : "none" }}>
+                    {inC ? "✓ In cart" : stock === 0 ? "Out of stock" : "Add to cart"}
+                  </button>
+                  {inC && (
+                    <button onClick={() => setScreen("cart")}
+                      style={{ width: "100%", background: "transparent", color: "#555", border: "1px solid #1e1e1e", borderRadius: 8, padding: "12px 24px", fontSize: 12, fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 10, fontFamily: "inherit" }}>
+                      View cart →
+                    </button>
+                  )}
+                </>
               )}
 
+              {/* Trust bar */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 28 }}>
+                {[["🌍","Secure worldwide shipping"],["📦","Premium collector packaging"],["✓","Verified collector network"],["⚡","Fast response time"]].map(([icon, text]) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#0d0d0d", borderRadius: 8, border: "1px solid #1a1a1a" }}>
+                    <span style={{ fontSize: 14 }}>{icon}</span>
+                    <span style={{ color: "#555", fontSize: 10, lineHeight: 1.4 }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+
               {/* Technical data */}
-              <div style={{ marginTop: inC ? 0 : 8 }}>
-                <div style={{ color: "#2a2a2a", fontSize: 9, textTransform: "uppercase", letterSpacing: 3, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #141414" }}>Card Details</div>
+              <div style={{ borderTop: "1px solid #141414", paddingTop: 20 }}>
+                <div style={{ color: "#2a2a2a", fontSize: 9, textTransform: "uppercase", letterSpacing: 3, marginBottom: 14 }}>Card Details</div>
                 {[
                   ["Driver", selected.Piloto, false],
                   ["Team", selected.Equipo, false],
@@ -753,16 +776,16 @@ export default function App() {
                   ["PSA Population", selected.PSA_Poblacion, true],
                   ["Stock", stock > 0 ? stock + " units" : "Out of stock", false],
                 ].filter(r => r[1]).map(([label, value, highlight]) => (
-                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid #111", fontSize: 13 }}>
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid #0f0f0f" }}>
                     <span style={{ color: "#3a3a3a", fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
-                    <span style={{ color: highlight ? C.gold : "#aaa", fontWeight: highlight ? 700 : 500, fontSize: 13 }}>{value}</span>
+                    <span style={{ color: highlight ? C.gold : "#888", fontWeight: highlight ? 700 : 400, fontSize: 13 }}>{value}</span>
                   </div>
                 ))}
               </div>
 
               {/* External links */}
               {(selected.Cardmarket_URL || selected.eBay_URL) && (
-                <div style={{ marginTop: 20, display: "flex", gap: 8 }}>
+                <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
                   {selected.Cardmarket_URL && <a href={selected.Cardmarket_URL} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", border: "1px solid #1e1e1e", color: "#444", borderRadius: 6, padding: "9px", fontSize: 10, fontWeight: 600, textDecoration: "none", textAlign: "center", letterSpacing: 1, textTransform: "uppercase" }}>Cardmarket ↗</a>}
                   {selected.eBay_URL && <a href={selected.eBay_URL} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", border: "1px solid #1e1e1e", color: "#444", borderRadius: 6, padding: "9px", fontSize: 10, fontWeight: 600, textDecoration: "none", textAlign: "center", letterSpacing: 1, textTransform: "uppercase" }}>eBay ↗</a>}
                 </div>
