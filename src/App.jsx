@@ -1,4 +1,4 @@
-  import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -142,11 +142,16 @@ export default function App() {
   const doOrder = () => {
     if (!orderData.nombre.trim() || !orderData.email.trim() || !orderData.address.trim()) { setOrderError("Please fill in name, email and address."); return; }
     if (!/\S+@\S+\.\S+/.test(orderData.email)) { setOrderError("Invalid email."); return; }
-    const prods = cartItems.map(c => `- ${c.product.Nombre} x${c.qty} · ${(parseFloat(c.product.Precio || 0) * c.qty).toFixed(2)}€`).join("\n");
+    const prods = cartItems.map(c => {
+      const isC = c.product.Consignment === "TRUE";
+      return `- ${c.product.Nombre} x${c.qty} · ${(parseFloat(c.product.Precio || 0) * c.qty).toFixed(2)}€${isC ? " [CONSIGNMENT — seller confirmation required]" : ""}`;
+    }).join("\n");
+    const hasConsignment = cartItems.some(c => c.product.Consignment === "TRUE");
+    const consignmentNote = hasConsignment ? "\n\n⚠️ CONSIGNMENT ORDER: One or more items require seller confirmation before payment. WBC Cards will contact the seller and confirm availability before processing." : "";
     const newOrder = { id: Date.now(), ...orderData, items: [...cart], total: cartTotal, createdAt: Date.now(), status: "pending" };
     const updated = [...orders, newOrder];
     setOrders(updated); saveOrders(updated);
-    window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent("WBC Cards Order - " + orderData.nombre)}&body=${encodeURIComponent("Client: " + orderData.nombre + "\nEmail: " + orderData.email + "\nPhone: " + (orderData.tel || "N/A") + "\nAddress: " + orderData.address + "\n\n" + prods + "\n\nTotal: " + cartTotal + "€")}`);
+    window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent("WBC Cards Order - " + orderData.nombre)}&body=${encodeURIComponent("Client: " + orderData.nombre + "\nEmail: " + orderData.email + "\nPhone: " + (orderData.tel || "N/A") + "\nAddress: " + orderData.address + "\n\n" + prods + consignmentNote + "\n\nTotal: " + cartTotal + "€")}`);
     updateStock(cart);
     // Update local state immediately
     setProducts(prev => prev.map(p => {
@@ -210,10 +215,17 @@ export default function App() {
           {isParallel && <div style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><span style={{ width: 5, height: 5, borderRadius: "50%", background: rc, display: "inline-block" }} /><span style={{ fontSize: 10, color: rc, fontWeight: 700 }}>{p.Paralela}</span></div>}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", paddingTop: 8 }}>
             <div style={{ fontSize: 16, fontWeight: 900, color: C.gold }}>{parseFloat(p.Precio || 0).toFixed(2)}€</div>
-            <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
-              style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : C.red, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase" }}>
-              {inC ? "✓" : stock === 0 ? "—" : "Add"}
-            </button>
+            {p.Consignment === "TRUE" ? (
+              <button onClick={e => { e.stopPropagation(); addToCart(p._id, e); }}
+                style={{ background: "transparent", color: C.gold, border: "1px solid rgba(201,168,76,0.4)", borderRadius: 6, padding: "6px 10px", fontSize: 10, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                {inC ? "✓" : "Reserve"}
+              </button>
+            ) : (
+              <button onClick={e => { e.stopPropagation(); if (stock > 0) addToCart(p._id, e); }}
+                style={{ background: inC ? "#16a34a" : stock === 0 ? "#222" : C.red, color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase" }}>
+                {inC ? "✓" : stock === 0 ? "—" : "Add"}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -851,6 +863,12 @@ export default function App() {
             </div>
             <button onClick={() => setOrderOpen(true)} style={{ width: "100%", background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: 15, fontSize: 15, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>Checkout →</button>
             <div style={{ textAlign: "center", marginTop: 14, color: "#444", fontSize: 10 }}>🔒 Secure payment · 📦 Insured shipping</div>
+            {cartItems.some(c => c.product.Consignment === "TRUE") && (
+              <div style={{ marginTop: 14, background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 8, padding: "12px 14px" }}>
+                <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>◈ Consignment Item</div>
+                <p style={{ color: "#555", fontSize: 11, lineHeight: 1.7, margin: 0 }}>No payment required yet. WBC Cards will confirm availability with the seller before processing your order.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
