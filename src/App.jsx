@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef } from "react";
+  import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -74,7 +74,6 @@ export default function App() {
   const [activeImg, setActiveImg] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const searchRef = useRef(null);
-  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     const r = () => setIsMobile(window.innerWidth < 1024);
@@ -195,10 +194,151 @@ export default function App() {
   };
 
   const Navbar = () => {
-     
-    const searchResults = search.length > 1
-      ? products.filter(p => ["Nombre","Piloto","Equipo","Año","Numeracion","Serie","Paralela","Grading","Nota_Grading"].some(k => (p[k]||"").toLowerCase().includes(search.toLowerCase()))).slice(0, 6)
+    const [searchFocused, setSearchFocused] = useState(false);
+    const [inputVal, setInputVal] = useState(search);
+
+    const doSearch = () => {
+      setSearch(inputVal);
+      setScreen("catalog");
+      setSearchFocused(false);
+    };
+
+    const searchResults = inputVal.length > 1
+      ? products.filter(p => ["Nombre","Piloto","Equipo","Año","Numeracion","Serie","Paralela","Grading","Nota_Grading"].some(k => (p[k]||"").toLowerCase().includes(inputVal.toLowerCase()))).slice(0, 6)
       : [];
+
+    const QUICK_FILTERS = [
+      { label: "All", icon: "⊞", action: () => { setFilters({ set:"", piloto:"", numerada:false, auto:false, relic:false }); setInputVal(""); setSearch(""); } },
+      { label: "Drivers", icon: "🏎", action: () => {} },
+      { label: "Sets", icon: "📦", action: () => {} },
+      { label: "Autos", icon: "✍", action: () => setFilters(f => ({...f, auto:true, relic:false})) },
+      { label: "Relics", icon: "🔷", action: () => setFilters(f => ({...f, relic:true, auto:false})) },
+      { label: "Numbered", icon: "#", action: () => setFilters(f => ({...f, numerada:true})) },
+      { label: "PSA 10", icon: "🏆", action: () => { setInputVal("PSA 10"); setSearch("PSA 10"); setScreen("catalog"); } },
+    ];
+
+    return (
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(6,6,6,0.98)", backdropFilter: "blur(16px)", borderBottom: "1px solid #1a1a1a" }}>
+        <div style={{ height: 2, background: "linear-gradient(90deg, " + C.red + " 0%, " + C.gold + " 50%, " + C.red + " 100%)" }} />
+
+        {/* Main row */}
+        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px", height: isMobile ? 54 : 66, display: "flex", alignItems: "center", gap: 14 }}>
+
+          {/* Logo */}
+          <div onClick={() => { setScreen("home"); setSearch(""); setInputVal(""); }} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <LogoImg size={isMobile ? 40 : 52} />
+            {!isMobile && <div>
+              <div style={{ color: C.gold, fontSize: 14, fontWeight: 900, letterSpacing: 3, lineHeight: 1 }}>WBC CARDS F1</div>
+              <div style={{ color: "#444", fontSize: 8, letterSpacing: 3, marginTop: 2 }}>PREMIUM TRADING CARDS</div>
+            </div>}
+          </div>
+
+          {/* Search box */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", background: "#111", border: "1px solid " + (searchFocused ? C.gold : "#2a2a2a"), borderRadius: 8, height: 42, transition: "border-color 0.2s" }}>
+              <span style={{ padding: "0 14px", color: searchFocused ? C.gold : "#555", fontSize: 16, flexShrink: 0 }}>🔍</span>
+              <input
+                ref={searchRef}
+                style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.white, fontSize: 13, fontFamily: "inherit", height: "100%" }}
+                placeholder={isMobile ? "Search cards..." : "Search driver, team, year, /10, PSA 10, auto..."}
+                value={inputVal}
+                onChange={e => setInputVal(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 300)}
+                onKeyDown={e => {
+                  if (e.key === "Escape") { setInputVal(""); setSearch(""); setSearchFocused(false); }
+                  if (e.key === "Enter") doSearch();
+                }}
+              />
+              {inputVal && <button onClick={() => { setInputVal(""); setSearch(""); }} style={{ padding: "0 12px", background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18 }}>×</button>}
+              <button onClick={doSearch} style={{ background: C.red, border: "none", color: "#fff", padding: "0 18px", height: "100%", cursor: "pointer", fontSize: 14, fontWeight: 800, borderRadius: "0 7px 7px 0", flexShrink: 0 }}>🔍</button>
+            </div>
+
+            {/* Dropdown */}
+            {searchFocused && inputVal.length > 1 && (
+              <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: 10, zIndex: 200, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.8)" }}>
+                {searchResults.length === 0 ? (
+                  <div style={{ padding: "16px 20px", color: "#555", fontSize: 13 }}>No results for "{inputVal}"</div>
+                ) : (
+                  <>
+                    {searchResults.map(p => {
+                      const isAuto = p.Auto === "TRUE";
+                      const isGraded = p.Grading === "TRUE" && p.Empresa_Grading;
+                      return (
+                        <div key={p._id}
+                          onClick={() => { setSelected(p); setActiveImg(0); setScreen("product"); setSearch(""); setInputVal(""); window.scrollTo(0,0); }}
+                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", cursor: "pointer", borderBottom: "1px solid #1a1a1a" }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#1a1a1a"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          <div style={{ width: 40, height: 52, background: "#0a0a0a", borderRadius: 6, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {p.Imagen_URL ? <img src={p.Imagen_URL} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /> : <span style={{ fontSize: 18 }}>🏎</span>}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ color: C.white, fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.Nombre}</div>
+                            <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{p.Piloto} · {p.Serie}</div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                            {p.Numeracion && <span style={{ background: "rgba(204,0,0,0.2)", border: "1px solid rgba(204,0,0,0.5)", color: "#ff6666", fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 4 }}>{p.Numeracion}</span>}
+                            {isAuto && <span style={{ background: "rgba(201,168,76,0.2)", border: "1px solid rgba(201,168,76,0.5)", color: C.gold, fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 4 }}>AUTO</span>}
+                            {isGraded && <span style={{ background: "rgba(201,168,76,0.9)", color: "#000", fontSize: 10, fontWeight: 900, padding: "2px 7px", borderRadius: 4 }}>{p.Empresa_Grading} {p.Nota_Grading}</span>}
+                            <span style={{ color: C.gold, fontWeight: 900, fontSize: 14 }}>{parseFloat(p.Precio||0).toFixed(0)}€</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div onClick={doSearch} style={{ padding: "12px 20px", color: C.red, fontSize: 12, fontWeight: 700, cursor: "pointer", textAlign: "center", borderTop: "1px solid #1a1a1a" }}>
+                      View all results for "{inputVal}" →
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Cart + admin */}
+          <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+            <button onClick={() => setScreen("cart")} style={{ position: "relative", background: cartCount > 0 ? "rgba(204,0,0,0.15)" : "transparent", border: cartCount > 0 ? "1px solid rgba(204,0,0,0.3)" : "1px solid transparent", color: C.white, cursor: "pointer", fontSize: 18, padding: "6px 10px", borderRadius: 8 }}>
+              🛒
+              {cartCount > 0 && <span style={{ position: "absolute", top: -2, right: -2, background: C.red, color: "#fff", borderRadius: 10, fontSize: 9, fontWeight: 900, padding: "1px 5px", minWidth: 16, textAlign: "center" }}>{cartCount}</span>}
+            </button>
+            <button onClick={() => { setScreen("admin"); setAdminAuth(false); setAdminPass(""); }} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18, padding: "6px 8px" }}>👤</button>
+            {isMobile && <button onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 22, padding: "6px 8px" }}>☰</button>}
+          </div>
+        </div>
+
+        {/* Quick filters row */}
+        {!isMobile && (
+          <div style={{ borderTop: "1px solid #151515", background: "rgba(0,0,0,0.5)" }}>
+            <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 20px", height: 38, display: "flex", alignItems: "center", gap: 4 }}>
+              {QUICK_FILTERS.map(f => (
+                <button key={f.label} onClick={() => { f.action(); setScreen("catalog"); }}
+                  style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", padding: "4px 12px", fontSize: 11, fontWeight: 700, borderRadius: 6, textTransform: "uppercase", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                  <span style={{ fontSize: 12 }}>{f.icon}</span> {f.label}
+                </button>
+              ))}
+              <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+                {SETS.map(s => (
+                  <button key={s} onClick={() => { setFilters(flt => ({...flt, set: flt.set===s?"":s})); setScreen("catalog"); }}
+                    style={{ background: filters.set===s ? C.red : "transparent", color: filters.set===s ? "#fff" : "#555", border: filters.set===s ? "none" : "1px solid #222", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                    {s.replace("Topps ","").replace(" F1","")}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile menu */}
+        {isMobile && mobileMenu && (
+          <div style={{ background: "#0a0a0a", borderTop: "1px solid " + C.border, padding: "12px 20px" }}>
+            {SETS.map(s => <div key={s} onClick={() => { setFilters(f => ({...f, set:s})); setScreen("catalog"); setMobileMenu(false); }} style={{ padding: "10px 0", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", borderBottom: "1px solid " + C.border, textTransform: "uppercase", letterSpacing: 1 }}>{s}</div>)}
+            <div onClick={() => { setFilters(f => ({...f,auto:true,relic:false})); setScreen("catalog"); setMobileMenu(false); }} style={{ padding: "10px 0", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", borderBottom: "1px solid " + C.border, textTransform: "uppercase" }}>Autos</div>
+            <div onClick={() => { setFilters(f => ({...f,relic:true,auto:false})); setScreen("catalog"); setMobileMenu(false); }} style={{ padding: "10px 0", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>Relics</div>
+          </div>
+        )}
+      </nav>
+    );
+  };
 
     const QUICK_FILTERS = [
       { label: "All", icon: "⊞", action: () => setFilters({ set:"", piloto:"", numerada:false, auto:false, relic:false }) },
@@ -234,10 +374,10 @@ export default function App() {
                 style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.white, fontSize: 13, fontFamily: "inherit", height: "100%" }}
                 placeholder={isMobile ? "Search cards..." : "Search driver, team, year, /10, PSA 10, auto..."}
                 value={search}
-                onChange={e => { setSearch(e.target.value); 
+                onChange={e => { setSearch(e.target.value); }}
                 onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-                onKeyDown={e => e.key === "Escape" && (setSearch(""), setSearchFocused(false))} />
+                onBlur={() => setTimeout(() => setSearchFocused(false), 300)}
+                onKeyDown={e => { if (e.key === "Escape") { setSearch(""); setSearchFocused(false); } if (e.key === "Enter" && search) { setScreen("catalog"); setSearchFocused(false); } }}
               {search && <button onClick={() => setSearch("")} style={{ padding: "0 12px", background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18 }}>×</button>}
               {!isMobile && (
                 <button onClick={() => { if (search) setScreen("catalog"); }}
