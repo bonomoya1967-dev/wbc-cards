@@ -1,4 +1,4 @@
-  import { useState, useEffect, useRef } from "react";
+   import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -619,15 +619,33 @@ export default function App() {
                 {selected.Auto === "TRUE" && <span style={{ background: "rgba(201,168,76,0.15)", border: "1px solid " + C.gold, color: C.gold, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, textTransform: "uppercase", letterSpacing: 1 }}>AUTOGRAPH</span>}
                 {selected.Relic === "TRUE" && <span style={{ background: "rgba(167,139,250,0.15)", border: "1px solid #a78bfa", color: "#a78bfa", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, textTransform: "uppercase", letterSpacing: 1 }}>RELIC</span>}
                 {selected.Numeracion && <span style={{ background: "rgba(100,100,100,0.15)", border: "1px solid " + rc, color: rc, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20 }}>{selected.Numeracion}</span>}
+                {selected.Consignment === "TRUE" && <span style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.4)", color: C.gold, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, textTransform: "uppercase", letterSpacing: 1 }}>◈ Brokered Sale</span>}
               </div>
               <div style={{ color: C.gray, fontSize: 12, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>{selected.Piloto} · {selected.Equipo}</div>
               <h1 style={{ color: C.white, fontSize: isMobile ? 22 : 28, fontWeight: 900, marginBottom: 8, lineHeight: 1.2 }}>{selected.Nombre}</h1>
               {selected.Paralela && selected.Paralela !== "Base" && <div style={{ color: rc, fontWeight: 700, fontSize: 14, marginBottom: 16 }}>{selected.Paralela}</div>}
               <div style={{ fontSize: isMobile ? 36 : 44, fontWeight: 900, color: C.gold, marginBottom: 24 }}>{parseFloat(selected.Precio || 0).toFixed(2)}€</div>
-              <button onClick={e => { if (stock > 0) addToCart(selected._id, e); }}
-                style={{ width: "100%", background: inC ? "#16a34a" : stock === 0 ? "#1a1a1a" : C.red, color: "#fff", border: "none", borderRadius: 8, padding: 16, fontSize: 15, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
-                {inC ? "✓ In cart" : stock === 0 ? "Out of stock" : "Add to cart"}
-              </button>
+
+              {/* Consignment notice */}
+              {selected.Consignment === "TRUE" && (
+                <div style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 16 }}>
+                  <div style={{ color: C.gold, fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>◈ WBC Cards Consignment Service</div>
+                  <p style={{ color: "#888", fontSize: 12, lineHeight: 1.7, margin: 0 }}>This card is offered through the WBC Cards Consignment Service. Availability is subject to seller confirmation before final purchase validation.</p>
+                </div>
+              )}
+
+              {/* CTA button — Request if consignment, Add to cart otherwise */}
+              {selected.Consignment === "TRUE" ? (
+                <button onClick={() => setScreen("consignment")}
+                  style={{ width: "100%", background: "#0a0a0a", color: C.gold, border: "1px solid rgba(201,168,76,0.5)", borderRadius: 8, padding: 16, fontSize: 14, fontWeight: 900, cursor: "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>
+                  ◈ Reserve Interest
+                </button>
+              ) : (
+                <button onClick={e => { if (stock > 0) addToCart(selected._id, e); }}
+                  style={{ width: "100%", background: inC ? "#16a34a" : stock === 0 ? "#1a1a1a" : C.red, color: "#fff", border: "none", borderRadius: 8, padding: 16, fontSize: 15, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+                  {inC ? "✓ In cart" : stock === 0 ? "Out of stock" : "Add to cart"}
+                </button>
+              )}
               {inC && (
                 <button onClick={() => setScreen("cart")}
                   style={{ width: "100%", background: "transparent", color: C.gold, border: "1px solid " + C.gold, borderRadius: 8, padding: 13, fontSize: 14, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1, marginBottom: 24 }}>
