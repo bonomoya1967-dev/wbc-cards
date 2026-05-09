@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+ import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -41,6 +41,22 @@ const DEFAULT_LEGAL = {
   devoluciones: "RETURNS POLICY\n\n14 calendar days from receipt.\nContact: info@wbccards.com"
 };
 
+const STOCK_API = "https://script.google.com/macros/s/AKfycbz6gNngjIo_yJBSAMIFRpVlj1kzUqRCEwDvCwWDnS84szvIR1IihH8I2lSsO0-ctY-L/exec";
+
+const updateStock = async (items) => {
+  try {
+    for (const item of items) {
+      for (let i = 0; i < item.qty; i++) {
+        await fetch(STOCK_API, {
+          method: "POST",
+          body: JSON.stringify({ id: item.id }),
+        });
+      }
+    }
+  } catch (err) {
+    console.log("Stock update error:", err);
+  }
+};
 const getLegal = () => { try { return JSON.parse(localStorage.getItem("wbc_legal") || "null") || DEFAULT_LEGAL; } catch { return DEFAULT_LEGAL; } };
 const saveLegal = d => { try { localStorage.setItem("wbc_legal", JSON.stringify(d)); } catch {} };
 const getOrders = () => { try { return JSON.parse(localStorage.getItem("wbc_orders") || "[]"); } catch { return []; } };
@@ -131,6 +147,16 @@ export default function App() {
     const updated = [...orders, newOrder];
     setOrders(updated); saveOrders(updated);
     window.open(`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent("WBC Cards Order - " + orderData.nombre)}&body=${encodeURIComponent("Client: " + orderData.nombre + "\nEmail: " + orderData.email + "\nPhone: " + (orderData.tel || "N/A") + "\nAddress: " + orderData.address + "\n\n" + prods + "\n\nTotal: " + cartTotal + "€")}`);
+    updateStock(cart);
+    // Update local state immediately
+    setProducts(prev => prev.map(p => {
+      const cartItem = cart.find(c => c.id === p._id);
+      if (cartItem) {
+        const newStock = Math.max(0, parseInt(p.Stock || 0) - cartItem.qty);
+        return { ...p, Stock: String(newStock) };
+      }
+      return p;
+    }));;
     setOrderOpen(false);
     setOrderData({ nombre: "", email: "", tel: "", address: "" });
     setOrderError("");
@@ -863,7 +889,27 @@ export default function App() {
                         <div style={{ display: "flex", gap: 6 }}>
                           {order.status === "pending" && <button onClick={() => { const u = orders.map(o => o.id === order.id ? { ...o, status: "sent" } : o); setOrders(u); saveOrders(u); }} style={{ flex: 2, background: "#1e3a5f", color: "#60a5fa", border: "1px solid #2563eb", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Mark shipped</button>}
                           {order.status === "sent" && <button onClick={() => { const u = orders.map(o => o.id === order.id ? { ...o, status: "paid" } : o); setOrders(u); saveOrders(u); }} style={{ flex: 2, background: "#14532d", color: "#4ade80", border: "1px solid #16a34a", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>✓ Paid</button>}
-                          <button onClick={() => { const u = orders.filter(o => o.id !== order.id); setOrders(u); saveOrders(u); }} style={{ flex: 1, background: "#1e0000", color: "#f87171", border: "1px solid #7f1d1d", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Delete</button>
+                          <button onClick={() => {
+                            if (window.confirm("Cancel this order and restore stock?")) {
+                              // Restore stock via API
+                              const restoreItems = order.items.map(c => ({ id: c.id, qty: c.qty }));
+                              restoreItems.forEach(async item => {
+                                for (let i = 0; i < item.qty; i++) {
+                                  try {
+                                    await fetch(STOCK_API, { method: "POST", body: JSON.stringify({ id: item.id, restore: true }) });
+                                  } catch(e) {}
+                                }
+                              });
+                              // Update local state
+                              setProducts(prev => prev.map(p => {
+                                const item = restoreItems.find(c => c.id === p._id);
+                                if (item) return { ...p, Stock: String(parseInt(p.Stock || 0) + item.qty) };
+                                return p;
+                              }));
+                              const u = orders.filter(o => o.id !== order.id);
+                              setOrders(u); saveOrders(u);
+                            }
+                          }} style={{ flex: 1, background: "#1e0000", color: "#f87171", border: "1px solid #7f1d1d", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Cancel & Restore</button>
                         </div>
                       </div>
                     );
@@ -1121,4 +1167,4 @@ export default function App() {
       )}
     </div>
   );
-}   
+}
