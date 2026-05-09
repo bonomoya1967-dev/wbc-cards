@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+ import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -109,8 +109,9 @@ export default function App() {
     if (filters.set && (p.Serie || "") !== filters.set) return false;
     if (filters.piloto && !(p.Piloto || "").toLowerCase().includes(filters.piloto.toLowerCase())) return false;
     if (filters.numerada && !p.Numeracion) return false;
-    if (filters.auto && p.Auto !== "TRUE") return false;
-    if (filters.relic && p.Relic !== "TRUE") return false;
+    if (filters.auto && filters.relic) { if (p.Auto !== "TRUE" && p.Relic !== "TRUE") return false; }
+    else if (filters.auto && p.Auto !== "TRUE") return false;
+    else if (filters.relic && p.Relic !== "TRUE") return false;
     if (search) {
       const q = search.toLowerCase();
       return ["Nombre","Piloto","Equipo","Año","Numeracion","Serie","Paralela","Grading","Nota_Grading"].some(k => (p[k] || "").toLowerCase().includes(q));
@@ -420,13 +421,14 @@ export default function App() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button onClick={() => setScreen("catalog")}
+            <button onClick={() => { setFilters({ set:"", piloto:"", numerada:false, auto:false, relic:false }); setScreen("catalog"); }}
               style={{ background: C.red, color: "#fff", border: "none", borderRadius: 6, padding: isMobile ? "12px 22px" : "13px 30px", fontSize: isMobile ? 12 : 13, fontWeight: 900, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase", boxShadow: "0 4px 20px rgba(204,0,0,0.45)" }}>
               🏎 EXPLORE COLLECTION
             </button>
-            <button onClick={() => { setFilters(f => ({ ...f, auto: true })); setScreen("catalog"); }}
-              style={{ background: "transparent", color: C.gold, border: "1px solid rgba(201,168,76,0.4)", borderRadius: 6, padding: isMobile ? "12px 22px" : "13px 30px", fontSize: isMobile ? 12 : 13, fontWeight: 800, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase" }}>
-              ✦ AUTOS & RELICS
+            <button onClick={() => setScreen("consignment")}
+              style={{ background: "#0a0a0a", color: C.gold, border: "1px solid rgba(201,168,76,0.5)", borderRadius: 6, padding: isMobile ? "12px 22px" : "13px 30px", fontSize: isMobile ? 12 : 13, fontWeight: 800, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <span>◈ CONSIGNMENT SERVICE</span>
+              <span style={{ fontSize: 9, letterSpacing: 1, color: "rgba(201,168,76,0.6)", fontWeight: 600, textTransform: "uppercase" }}>Sell Your Premium F1 Cards</span>
             </button>
           </div>
           {!isMobile && (
@@ -805,6 +807,128 @@ export default function App() {
     </div>
   );
 
+  const ConsignmentScreen = () => {
+    const [form, setForm] = useState({ name:"", email:"", social:"", cardDetails:"", price:"", notes:"" });
+    const [sent, setSent] = useState(false);
+    const [formError, setFormError] = useState("");
+    const submitForm = () => {
+      if (!form.name.trim() || !form.email.trim() || !form.cardDetails.trim()) { setFormError("Please fill in name, email and card details."); return; }
+      if (!/\S+@\S+\.\S+/.test(form.email)) { setFormError("Invalid email."); return; }
+      const body = `Consignment Request\n\nName: ${form.name}\nEmail: ${form.email}\nSocial: ${form.social||"N/A"}\n\nCard Details:\n${form.cardDetails}\n\nExpected Price: ${form.price||"N/A"}\n\nNotes: ${form.notes||"N/A"}`;
+      window.open(`mailto:info@wbccards.com?subject=${encodeURIComponent("Consignment Request - " + form.name)}&body=${encodeURIComponent(body)}`);
+      setSent(true);
+    };
+    const inp2 = { width:"100%", padding:"12px 16px", border:"1px solid #2a2a2a", borderRadius:8, fontSize:14, outline:"none", background:"#0d0d0d", color:C.white, fontFamily:"inherit" };
+    return (
+      <div style={{ paddingTop: isMobile ? 56 : 106, background: C.dark, minHeight:"100vh" }}>
+        {/* HERO */}
+        <div style={{ minHeight: isMobile ? 260 : 320, display:"flex", alignItems:"center", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, backgroundImage:"url('/hero-bg.jpg')", backgroundSize:"cover", backgroundPosition:"center 30%" }} />
+          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.4) 100%)" }} />
+          <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg, ${C.gold}, ${C.red}, ${C.gold})` }} />
+          <div style={{ maxWidth:1100, margin:"0 auto", padding: isMobile ? "40px 20px" : "60px 40px", position:"relative", zIndex:1, width:"100%" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(201,168,76,0.1)", border:"1px solid rgba(201,168,76,0.3)", borderRadius:4, padding:"4px 14px", fontSize:9, color:C.gold, fontWeight:900, letterSpacing:3, textTransform:"uppercase", marginBottom:18 }}>◈ WBC CARDS F1 · CONSIGNMENT SERVICE</div>
+            <h1 style={{ fontSize: isMobile ? 28 : 48, fontWeight:900, color:C.white, lineHeight:1.0, marginBottom:14, textTransform:"uppercase", letterSpacing:-1 }}>SELL YOUR PREMIUM<br /><span style={{ color:C.gold }}>FORMULA 1 CARDS</span></h1>
+            <p style={{ fontSize: isMobile ? 13 : 16, color:"#888", maxWidth:540, lineHeight:1.7 }}>WBC Cards helps collectors sell premium Formula 1 trading cards through a curated brokerage and consignment service.</p>
+          </div>
+        </div>
+        <div style={{ maxWidth:1100, margin:"0 auto", padding: isMobile ? "40px 20px 80px" : "60px 40px 80px" }}>
+          {/* HOW IT WORKS */}
+          <div style={{ marginBottom:56 }}>
+            <div style={{ textAlign:"center", marginBottom:32 }}>
+              <div style={{ color:C.gold, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:8 }}>Process</div>
+              <h2 style={{ color:C.white, fontSize: isMobile ? 22 : 28, fontWeight:900, margin:0, textTransform:"uppercase" }}>How It Works</h2>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap:14 }}>
+              {[["01","Submit Your Card","Send us the details of your F1 card including photos, grading information and expected price."],["02","Verification & Evaluation","WBC Cards reviews the card condition, rarity and market positioning before approval."],["03","Premium Listing","We create a professional listing with premium presentation and targeted exposure to collectors."],["04","Secure Sale & Shipping","Once a buyer is confirmed, WBC Cards manages the transaction and secure shipping process."]].map(([num, title, desc]) => (
+                <div key={num} style={{ background:"#0d0d0d", border:"1px solid #1e1e1e", borderRadius:12, padding:"22px 18px", position:"relative", overflow:"hidden" }}>
+                  <div style={{ position:"absolute", top:12, right:14, fontSize:28, fontWeight:900, color:"rgba(201,168,76,0.07)", lineHeight:1 }}>{num}</div>
+                  <div style={{ width:32, height:32, border:`1px solid ${C.gold}`, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:12 }}>
+                    <span style={{ color:C.gold, fontSize:12, fontWeight:900 }}>{num}</span>
+                  </div>
+                  <div style={{ color:C.white, fontSize:12, fontWeight:800, marginBottom:6, textTransform:"uppercase", letterSpacing:0.5 }}>{title}</div>
+                  <div style={{ color:"#555", fontSize:11, lineHeight:1.7 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* WHY SELL */}
+          <div style={{ marginBottom:56 }}>
+            <div style={{ textAlign:"center", marginBottom:32 }}>
+              <div style={{ color:C.gold, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:8 }}>Advantages</div>
+              <h2 style={{ color:C.white, fontSize: isMobile ? 22 : 28, fontWeight:900, margin:0, textTransform:"uppercase" }}>Why Sell With WBC Cards</h2>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:10 }}>
+              {[["Premium Formula 1 focused platform","Specialist audience exclusively interested in F1 collectibles."],["Curated collector audience","Direct access to verified collectors and buyers across Europe."],["Professional presentation","Each card is listed with premium photography and full details."],["Worldwide visibility","Exposure across our shop, Instagram and partner platforms."],["Trusted brokerage process","Transparent process with seller confirmation at every step."],["PSA & graded card expertise","Specialist knowledge in graded, numbered and rare cards."]].map(([title, desc]) => (
+                <div key={title} style={{ display:"flex", gap:14, padding:"16px 18px", background:"#0d0d0d", border:"1px solid #1e1e1e", borderRadius:10 }}>
+                  <span style={{ color:C.gold, fontSize:14, flexShrink:0, marginTop:2 }}>◈</span>
+                  <div><div style={{ color:C.white, fontSize:13, fontWeight:700, marginBottom:4 }}>{title}</div><div style={{ color:"#555", fontSize:12, lineHeight:1.6 }}>{desc}</div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* COMMISSION + INFO */}
+          <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:16, marginBottom:56 }}>
+            <div style={{ background:"#0d0d0d", border:`1px solid ${C.gold}`, borderRadius:12, padding:"28px 24px" }}>
+              <div style={{ color:C.gold, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:16 }}>Commission Structure</div>
+              <div style={{ display:"flex", justifyContent:"space-between", padding:"12px 0", borderBottom:"1px solid #1a1a1a", fontSize:14 }}><span style={{ color:"#888" }}>Premium cards</span><span style={{ color:C.gold, fontWeight:900, fontSize:20 }}>10%</span></div>
+              <div style={{ display:"flex", justifyContent:"space-between", padding:"12px 0", fontSize:14 }}><span style={{ color:"#888" }}>Mid-range cards</span><span style={{ color:C.gold, fontWeight:900, fontSize:20 }}>15–20%</span></div>
+              <p style={{ color:"#555", fontSize:12, marginTop:16, lineHeight:1.7 }}>Commission details are agreed before publication. No hidden fees.</p>
+            </div>
+            <div style={{ background:"#0d0d0d", border:"1px solid #1e1e1e", borderRadius:12, padding:"28px 24px" }}>
+              <div style={{ color:C.white, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:16 }}>Important Information</div>
+              {["Consignment cards remain property of the seller until sold.","All listings are subject to review and approval by WBC Cards.","WBC Cards reserves the right to refuse listings not meeting quality standards.","Commission rates vary depending on card value and category."].map((item,i) => (
+                <div key={i} style={{ display:"flex", gap:10, marginBottom:10 }}>
+                  <span style={{ color:C.gold, flexShrink:0, fontSize:12 }}>—</span>
+                  <span style={{ color:"#555", fontSize:12, lineHeight:1.6 }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* FORM */}
+          <div style={{ background:"#0d0d0d", border:"1px solid #2a2a2a", borderRadius:16, padding: isMobile ? "28px 20px" : "40px 40px" }}>
+            <div style={{ marginBottom:28 }}>
+              <div style={{ color:C.gold, fontSize:10, fontWeight:800, letterSpacing:3, textTransform:"uppercase", marginBottom:8 }}>Get Started</div>
+              <h2 style={{ color:C.white, fontSize: isMobile ? 20 : 26, fontWeight:900, margin:0, textTransform:"uppercase" }}>Request Evaluation</h2>
+              <p style={{ color:"#555", fontSize:13, marginTop:8, lineHeight:1.6 }}>Fill in the form below and our team will review your card within 48 hours.</p>
+            </div>
+            {sent ? (
+              <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                <div style={{ color:C.gold, fontSize:48, marginBottom:16 }}>◈</div>
+                <div style={{ color:C.gold, fontSize:20, fontWeight:900, marginBottom:8 }}>Request Sent</div>
+                <p style={{ color:"#666", fontSize:14 }}>We will review your card and get back to you within 48 hours.</p>
+                <button onClick={() => { setSent(false); setForm({ name:"", email:"", social:"", cardDetails:"", price:"", notes:"" }); }} style={{ marginTop:20, background:"none", border:`1px solid ${C.border}`, color:C.gray, borderRadius:8, padding:"10px 24px", fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Submit Another Card</button>
+              </div>
+            ) : (
+              <div style={{ display:"grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap:16 }}>
+                {[["Name *","text","Your full name","name"],["Email *","email","your@email.com","email"],["Instagram / Social Profile","text","@yourhandle","social"],["Expected Price (€)","text","e.g. 500","price"]].map(([label,type,ph,key]) => (
+                  <div key={key}>
+                    <label style={{ fontSize:11, fontWeight:700, color:"#555", display:"block", marginBottom:6, textTransform:"uppercase", letterSpacing:0.5 }}>{label}</label>
+                    <input style={inp2} type={type} placeholder={ph} value={form[key]} onChange={e => setForm(f => ({...f,[key]:e.target.value}))} />
+                  </div>
+                ))}
+                <div style={{ gridColumn: isMobile ? "1" : "1 / -1" }}>
+                  <label style={{ fontSize:11, fontWeight:700, color:"#555", display:"block", marginBottom:6, textTransform:"uppercase", letterSpacing:0.5 }}>Card Details *</label>
+                  <textarea style={{ ...inp2, minHeight:100, resize:"vertical", lineHeight:1.7 }} placeholder="Driver, set, year, parallel, numbered, grading (PSA/BGS), condition..." value={form.cardDetails} onChange={e => setForm(f => ({...f,cardDetails:e.target.value}))} />
+                </div>
+                <div style={{ gridColumn: isMobile ? "1" : "1 / -1" }}>
+                  <label style={{ fontSize:11, fontWeight:700, color:"#555", display:"block", marginBottom:6, textTransform:"uppercase", letterSpacing:0.5 }}>Additional Notes</label>
+                  <textarea style={{ ...inp2, minHeight:80, resize:"vertical", lineHeight:1.7 }} placeholder="Any additional information..." value={form.notes} onChange={e => setForm(f => ({...f,notes:e.target.value}))} />
+                </div>
+                <div style={{ gridColumn: isMobile ? "1" : "1 / -1" }}>
+                  {formError && <p style={{ color:"#f87171", fontSize:12, marginBottom:12 }}>{formError}</p>}
+                  <button onClick={submitForm} style={{ background:C.gold, color:C.black, border:"none", borderRadius:8, padding:"14px 36px", fontSize:14, fontWeight:900, cursor:"pointer", letterSpacing:2, textTransform:"uppercase", fontFamily:"inherit" }}>◈ REQUEST EVALUATION</button>
+                  <p style={{ color:"#444", fontSize:11, marginTop:12 }}>We will respond within 48 hours · info@wbccards.com</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <button onClick={() => setScreen("home")} style={{ marginTop:32, background:"none", border:"none", color:"#555", cursor:"pointer", fontSize:13, fontFamily:"inherit", display:"flex", alignItems:"center", gap:6 }}>← Back to home</button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ fontFamily: "-apple-system, 'Segoe UI', sans-serif", minHeight: "100vh", background: C.dark, color: C.white }}>
       <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } input::placeholder, textarea::placeholder { color: #444; } ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; } a { color: inherit; } button { font-family: inherit; }`}</style>
@@ -888,6 +1012,7 @@ export default function App() {
       {screen === "product" && <ProductScreen />}
       {screen === "cart" && <CartScreen />}
       {screen === "admin" && <AdminScreen />}
+      {screen === "consignment" && <ConsignmentScreen />}
 
       {/* MOBILE NAV */}
       {isMobile && (
