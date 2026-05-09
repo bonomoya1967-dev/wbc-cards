@@ -642,9 +642,9 @@ export default function App() {
           {/* Main grid: thumbnails | image | info */}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "80px 1fr 1fr", gap: isMobile ? 20 : 24, alignItems: "start" }}>
 
-            {/* COL 1 — Thumbnails vertical */}
+            {/* COL 1 — Thumbnails vertical — aligned to center */}
             {!isMobile && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: "25%" }}>
                 {imgs.map((img, i) => (
                   <div key={i} onClick={() => setActiveImg(i)}
                     style={{ width: 72, height: 90, background: "#0d0d0d", borderRadius: 8, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i ? C.gold : "rgba(255,255,255,0.06)"), opacity: activeImg === i ? 1 : 0.4, transition: "all 0.2s", padding: 4 }}>
@@ -753,15 +753,8 @@ export default function App() {
                 </>
               )}
 
-              {/* Trust bar 2x2 */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 24 }}>
-                {[["🌍","Secure worldwide shipping"],["📦","Premium collector packaging"],["✓","Verified collector network"],["⚡","Fast response time"]].map(([icon, text]) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#0d0d0d", borderRadius: 8, border: "1px solid #1a1a1a" }}>
-                    <span style={{ fontSize: 16 }}>{icon}</span>
-                    <span style={{ color: "#666", fontSize: 11, lineHeight: 1.4 }}>{text}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Rating image */}
+              <img src="/ratingnow.png" alt="Collector Rating" style={{ width: "100%", maxWidth: 420, display: "block", marginBottom: 20, borderRadius: 10 }} />
 
               {/* Card Details table */}
               <div style={{ borderTop: "1px solid #141414", paddingTop: 16 }}>
