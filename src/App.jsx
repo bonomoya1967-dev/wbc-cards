@@ -641,14 +641,14 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 28 : 52, alignItems: "start" }}>
 
             {/* LEFT — Thumbnails vertical + main image */}
-            <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
 
-              {/* Thumbnails column — left side, desktop only — skip first image */}
+              {/* Thumbnails column — ALL images, desktop only */}
               {!isMobile && imgs.length > 1 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 0 }}>
-                  {imgs.slice(1).map((img, i) => (
-                    <div key={i+1} onClick={() => setActiveImg(i + 1)}
-                      style={{ width: 56, height: 70, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i+1 ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: activeImg === i+1 ? 1 : 0.45, transition: "all 0.2s" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, marginTop: 0 }}>
+                  {imgs.map((img, i) => (
+                    <div key={i} onClick={() => setActiveImg(i)}
+                      style={{ width: 56, height: 70, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: activeImg === i ? 1 : 0.45, transition: "all 0.2s" }}>
                       <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 5 }} />
                     </div>
                   ))}
@@ -720,30 +720,32 @@ export default function App() {
               {/* Price + Stock + Quantity */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>Price</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  {/* Price */}
                   <div style={{ fontSize: isMobile ? 40 : 48, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
                     {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 18, marginLeft: 3, fontWeight: 500, color: "rgba(201,168,76,0.5)" }}>€</span>
                   </div>
+                  {/* Stock + Quantity — far right */}
                   {!isConsignment && stock > 0 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
                       <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 1 }}>
                         Stock: <span style={{ color: stock <= 3 ? "#f59e0b" : "#4ade80", fontWeight: 700 }}>{stock}</span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <button onClick={() => {
                           const cur = cart.find(c => c.id === selected._id);
                           const curQty = cur ? cur.qty : 0;
                           if (curQty > 1) changeQty(selected._id, -1);
                           else if (curQty === 1) removeFromCart(selected._id);
-                        }} style={{ width: 30, height: 30, background: "#1a1a1a", border: "1px solid #333", borderRadius: 6, color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>−</button>
-                        <span style={{ color: C.white, fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: "center" }}>
+                        }} style={{ width: 32, height: 32, background: "#1a1a1a", border: "1px solid #333", borderRadius: 6, color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>−</button>
+                        <span style={{ color: C.white, fontWeight: 700, fontSize: 16, minWidth: 24, textAlign: "center" }}>
                           {cart.find(c => c.id === selected._id)?.qty || 0}
                         </span>
                         <button onClick={e => {
                           const cur = cart.find(c => c.id === selected._id);
                           const curQty = cur ? cur.qty : 0;
                           if (curQty < stock) addToCart(selected._id, e);
-                        }} style={{ width: 30, height: 30, background: C.red, border: "none", borderRadius: 6, color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>+</button>
+                        }} style={{ width: 32, height: 32, background: C.red, border: "none", borderRadius: 6, color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>+</button>
                       </div>
                     </div>
                   )}
