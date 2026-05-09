@@ -1010,16 +1010,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* You may also like */}
-          {similar.length > 0 && (
-            <div style={{ marginTop: 72, paddingTop: 48, borderTop: "1px solid #111" }}>
-              <div style={{ color: "#333", fontSize: 10, textTransform: "uppercase", letterSpacing: 3, marginBottom: 6, textAlign: "center" }}>From the collection</div>
-              <h2 style={{ color: C.white, fontSize: isMobile ? 18 : 22, fontWeight: 800, marginBottom: 24, letterSpacing: -0.3, textAlign: "center" }}>You may also like</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(" + (isMobile ? 160 : 200) + "px, 1fr))", gap: 14, justifyContent: "center" }}>
-                {similar.map(p => <ProductCard key={p._id} p={p} />)}
-              </div>
-            </div>
-          )}
         </div>
         <Footer />
       </div>
@@ -1410,4 +1400,5 @@ export default function App() {
     </div>
   );
 }
+
 
