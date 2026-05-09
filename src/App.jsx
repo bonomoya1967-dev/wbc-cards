@@ -624,11 +624,193 @@ export default function App() {
     const stock = getStock(selected);
     const inC = inCart(selected._id);
     const imgs = [selected.Imagen_URL, selected.Imagen2_URL, selected.Imagen3_URL].filter(Boolean);
-    const similar = products.filter(p => p._id !== selected._id && (p.Piloto === selected.Piloto || p.Serie === selected.Serie)).sort(() => Math.random() - 0.5).slice(0, 4);
+    const similar = products.filter(p => p._id !== selected._id && (p.Piloto === selected.Piloto || p.Serie === selected.Serie)).sort(() => Math.random() - 0.5).slice(0, 5);
     const rc = RARITY_COLOR[selected.Rareza] || C.gray;
     const isConsignment = selected.Consignment === "TRUE";
+    const curQty = cart.find(c => c.id === selected._id)?.qty || 0;
 
     return (
+      <div style={{ paddingTop: isMobile ? 56 : 106, background: C.dark, minHeight: "100vh" }}>
+        <div style={{ maxWidth: 1300, margin: "0 auto", padding: isMobile ? "16px 16px 60px" : "28px 40px 80px" }}>
+
+          {/* Breadcrumb */}
+          <button onClick={() => setScreen("catalog")}
+            style={{ background: "none", border: "none", color: "#444", cursor: "pointer", marginBottom: 20, fontSize: 11, letterSpacing: 2, textTransform: "uppercase", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+            ← Collection
+          </button>
+
+          {/* Main grid: thumbnails | image | info */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "80px 1fr 1fr", gap: isMobile ? 20 : 24, alignItems: "start" }}>
+
+            {/* COL 1 — Thumbnails vertical */}
+            {!isMobile && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {imgs.map((img, i) => (
+                  <div key={i} onClick={() => setActiveImg(i)}
+                    style={{ width: 72, height: 90, background: "#0d0d0d", borderRadius: 8, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i ? C.gold : "rgba(255,255,255,0.06)"), opacity: activeImg === i ? 1 : 0.4, transition: "all 0.2s", padding: 4 }}>
+                    <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* COL 2 — Main image */}
+            <div>
+              <div style={{ background: "radial-gradient(ellipse at 50% 40%, #1e1e1e 0%, #0a0a0a 80%)", borderRadius: 14, overflow: "hidden", position: "relative", paddingTop: "130%", boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)" }}>
+                <div style={{ position: "absolute", inset: "5%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {imgs[activeImg]
+                    ? <img src={imgs[activeImg]} alt={selected.Nombre} style={{ maxWidth: "95%", maxHeight: "95%", objectFit: "contain", filter: "drop-shadow(0 10px 28px rgba(0,0,0,0.7))" }} />
+                    : <div style={{ color: "#1a1a1a", fontSize: 48 }}>🏎</div>}
+                </div>
+                {imgs[activeImg] && (
+                  <button onClick={() => setZoomImg(imgs[activeImg])}
+                    style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, color: "#555", cursor: "pointer", padding: "8px 10px", fontSize: 14, fontFamily: "inherit" }}>⊕</button>
+                )}
+              </div>
+              {/* Mobile thumbnails */}
+              {isMobile && imgs.length > 1 && (
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  {imgs.map((img, i) => (
+                    <div key={i} onClick={() => setActiveImg(i)}
+                      style={{ width: 52, height: 66, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (i === activeImg ? C.gold : "rgba(255,255,255,0.06)"), opacity: i === activeImg ? 1 : 0.4, padding: 3 }}>
+                      <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* COL 3 — Info */}
+            <div>
+              {/* Badges */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+                {selected.Numeracion && <span style={{ background: "rgba(96,165,250,0.15)", border: "1px solid rgba(96,165,250,0.4)", color: "#60a5fa", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 4, letterSpacing: 1 }}>{selected.Numeracion}</span>}
+                {selected.Auto === "TRUE" && <span style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: C.gold, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 4, textTransform: "uppercase", letterSpacing: 1 }}>Autograph</span>}
+                {selected.Relic === "TRUE" && <span style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.3)", color: "#a78bfa", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 4, textTransform: "uppercase", letterSpacing: 1 }}>Relic</span>}
+                {isConsignment && <span style={{ background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.25)", color: "rgba(201,168,76,0.7)", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 4, textTransform: "uppercase", letterSpacing: 1 }}>◈ Brokered Sale</span>}
+              </div>
+
+              {/* Driver · Team · Year */}
+              <div style={{ color: "#555", fontSize: 11, textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>
+                {[selected.Piloto, selected.Equipo, selected.Año].filter(Boolean).join(" · ")}
+              </div>
+
+              {/* Title */}
+              <h1 style={{ color: C.white, fontSize: isMobile ? 22 : 28, fontWeight: 900, marginBottom: 4, lineHeight: 1.2, letterSpacing: -0.5 }}>{selected.Nombre}</h1>
+              {selected.Serie && <div style={{ color: C.gold, fontSize: 12, fontWeight: 600, marginBottom: 20, opacity: 0.7 }}>{selected.Serie}</div>}
+
+              {/* Price row */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>Price</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: isMobile ? 38 : 44, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
+                    {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 16, marginLeft: 3, fontWeight: 500, color: "rgba(201,168,76,0.4)" }}>€</span>
+                  </div>
+                  {/* Qty selector */}
+                  {!isConsignment && stock > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                      <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+                        Stock: <span style={{ color: stock <= 3 ? "#f59e0b" : "#4ade80", fontWeight: 700 }}>{stock}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button onClick={() => { if (curQty > 1) changeQty(selected._id, -1); else if (curQty === 1) removeFromCart(selected._id); }}
+                          style={{ width: 34, height: 34, background: "#1a1a1a", border: "1px solid #333", borderRadius: 6, color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                        <span style={{ color: C.white, fontWeight: 700, fontSize: 16, minWidth: 24, textAlign: "center" }}>{curQty}</span>
+                        <button onClick={e => { if (curQty < stock) addToCart(selected._id, e); }}
+                          style={{ width: 34, height: 34, background: C.red, border: "none", borderRadius: 6, color: "#fff", fontSize: 20, cursor: curQty >= stock ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: curQty >= stock ? 0.4 : 1 }}>+</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Consignment block */}
+              {isConsignment && (
+                <div style={{ background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 8, padding: "12px 16px", marginBottom: 14 }}>
+                  <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 5 }}>◈ WBC Cards Consignment Service</div>
+                  <p style={{ color: "#666", fontSize: 12, lineHeight: 1.7, margin: 0 }}>This card is offered through the WBC Cards Consignment Service. Availability is subject to seller confirmation before final purchase validation.</p>
+                </div>
+              )}
+
+              {/* CTA */}
+              {isConsignment ? (
+                <>
+                  <button onClick={() => setScreen("consignment")}
+                    style={{ width: "100%", background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "14px 24px", fontSize: 13, fontWeight: 900, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8, fontFamily: "inherit", boxShadow: "0 4px 20px rgba(204,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    Reserve Interest
+                  </button>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 16, color: "#555", fontSize: 12 }}>
+                    <span>🔒</span><span>No payment required</span><span style={{ color: "#2a2a2a" }}>·</span><span>Seller confirmation before purchase</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button onClick={e => { if (stock > 0) addToCart(selected._id, e); }}
+                    style={{ width: "100%", background: inC ? "#16a34a" : stock === 0 ? "#111" : C.red, color: "#fff", border: "none", borderRadius: 8, padding: "14px 24px", fontSize: 13, fontWeight: 800, cursor: stock === 0 ? "default" : "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 8, fontFamily: "inherit", boxShadow: (!inC && stock > 0) ? "0 4px 20px rgba(204,0,0,0.3)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    🛒 {inC ? "✓ In cart" : stock === 0 ? "Out of stock" : "Add to cart"}
+                  </button>
+                  {inC && <button onClick={() => setScreen("cart")} style={{ width: "100%", background: "transparent", color: "#555", border: "1px solid #1e1e1e", borderRadius: 8, padding: "12px", fontSize: 12, fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: 2, marginBottom: 8, fontFamily: "inherit" }}>View cart →</button>}
+                </>
+              )}
+
+              {/* Trust bar 2x2 */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 24 }}>
+                {[["🌍","Secure worldwide shipping"],["📦","Premium collector packaging"],["✓","Verified collector network"],["⚡","Fast response time"]].map(([icon, text]) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#0d0d0d", borderRadius: 8, border: "1px solid #1a1a1a" }}>
+                    <span style={{ fontSize: 16 }}>{icon}</span>
+                    <span style={{ color: "#666", fontSize: 11, lineHeight: 1.4 }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Card Details table */}
+              <div style={{ borderTop: "1px solid #141414", paddingTop: 16 }}>
+                <div style={{ color: "#2a2a2a", fontSize: 9, textTransform: "uppercase", letterSpacing: 3, marginBottom: 12 }}>Card Details</div>
+                {[
+                  ["Driver", selected.Piloto, false],
+                  ["Team", selected.Equipo, false],
+                  ["Year", selected.Año, false],
+                  ["Series", selected.Serie, false],
+                  ["Subset", selected.Subset, false],
+                  ["Parallel", selected.Paralela, true],
+                  ["Numbered", selected.Numeracion, true],
+                  ["Condition", selected.Estado, false],
+                  ["Grading", selected.Grading === "TRUE" && selected.Empresa_Grading ? selected.Empresa_Grading + " " + selected.Nota_Grading : null, true],
+                  ["PSA Population", selected.PSA_Poblacion, true],
+                  ["Stock", stock > 0 ? stock + " units" : "Out of stock", false],
+                ].filter(r => r[1]).map(([label, value, highlight]) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #0f0f0f" }}>
+                    <span style={{ color: "#3a3a3a", fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
+                    <span style={{ color: highlight ? C.gold : "#888", fontWeight: highlight ? 700 : 400, fontSize: 13 }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* External links */}
+              {(selected.Cardmarket_URL || selected.eBay_URL) && (
+                <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                  {selected.Cardmarket_URL && <a href={selected.Cardmarket_URL} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", border: "1px solid #1e1e1e", color: "#555", borderRadius: 6, padding: "9px", fontSize: 11, fontWeight: 700, textDecoration: "none", textAlign: "center", letterSpacing: 1, textTransform: "uppercase" }}>Cardmarket ↗</a>}
+                  {selected.eBay_URL && <a href={selected.eBay_URL} target="_blank" rel="noreferrer" style={{ flex: 1, background: "transparent", border: "1px solid #1e1e1e", color: "#555", borderRadius: 6, padding: "9px", fontSize: 11, fontWeight: 700, textDecoration: "none", textAlign: "center", letterSpacing: 1, textTransform: "uppercase" }}>eBay ↗</a>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* You may also like — horizontal scroll */}
+          {similar.length > 0 && (
+            <div style={{ marginTop: 60, paddingTop: 40, borderTop: "1px solid #111" }}>
+              <div style={{ color: "#333", fontSize: 10, textTransform: "uppercase", letterSpacing: 3, marginBottom: 4 }}>From the collection</div>
+              <h2 style={{ color: C.white, fontSize: isMobile ? 18 : 22, fontWeight: 800, marginBottom: 20, letterSpacing: -0.3 }}>You may also like</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(" + (isMobile ? 150 : 190) + "px, 1fr))", gap: 14 }}>
+                {similar.map(p => <ProductCard key={p._id} p={p} />)}
+              </div>
+            </div>
+          )}
+        </div>
+        <Footer />
+      </div>
+    );
+  };
       <div style={{ paddingTop: isMobile ? 56 : 106, background: C.dark }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "20px 16px 60px" : "36px 40px 80px" }}>
 
@@ -962,16 +1144,12 @@ export default function App() {
                           {order.status === "sent" && <button onClick={() => { const u = orders.map(o => o.id === order.id ? { ...o, status: "paid" } : o); setOrders(u); saveOrders(u); }} style={{ flex: 2, background: "#14532d", color: "#4ade80", border: "1px solid #16a34a", borderRadius: 6, padding: 8, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>✓ Paid</button>}
                           <button onClick={() => {
                             if (window.confirm("Cancel this order and restore stock?")) {
-                              // Restore stock via API
                               const restoreItems = order.items.map(c => ({ id: c.id, qty: c.qty }));
                               restoreItems.forEach(async item => {
                                 for (let i = 0; i < item.qty; i++) {
-                                  try {
-                                    await fetch(STOCK_API, { method: "POST", body: JSON.stringify({ id: item.id, restore: true }) });
-                                  } catch(e) {}
+                                  try { await fetch(STOCK_API, { method: "POST", body: JSON.stringify({ id: item.id, restore: true }) }); } catch(e) {}
                                 }
                               });
-                              // Update local state
                               setProducts(prev => prev.map(p => {
                                 const item = restoreItems.find(c => c.id === p._id);
                                 if (item) return { ...p, Stock: String(parseInt(p.Stock || 0) + item.qty) };
