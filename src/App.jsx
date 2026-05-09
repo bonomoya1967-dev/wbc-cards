@@ -643,12 +643,12 @@ export default function App() {
             {/* LEFT — Thumbnails vertical + main image */}
             <div style={{ display: "flex", gap: 12 }}>
 
-              {/* Thumbnails column — left side, desktop only */}
+              {/* Thumbnails column — left side, desktop only — skip first image */}
               {!isMobile && imgs.length > 1 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
-                  {imgs.map((img, i) => (
-                    <div key={i} onClick={() => setActiveImg(i)}
-                      style={{ width: 56, height: 70, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (i === activeImg ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: i === activeImg ? 1 : 0.45, transition: "all 0.2s" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 0 }}>
+                  {imgs.slice(1).map((img, i) => (
+                    <div key={i+1} onClick={() => setActiveImg(i + 1)}
+                      style={{ width: 56, height: 70, background: "#0d0d0d", borderRadius: 6, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i+1 ? C.gold : "rgba(255,255,255,0.06)"), flexShrink: 0, opacity: activeImg === i+1 ? 1 : 0.45, transition: "all 0.2s" }}>
                       <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 5 }} />
                     </div>
                   ))}
@@ -717,11 +717,39 @@ export default function App() {
               {/* Series */}
               {selected.Serie && <div style={{ color: C.gold, fontSize: 12, fontWeight: 600, marginBottom: 20, opacity: 0.7 }}>{selected.Serie}</div>}
 
-              {/* Price */}
+              {/* Price + Stock + Quantity */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>Price</div>
-                <div style={{ fontSize: isMobile ? 40 : 48, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
-                  {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 18, marginLeft: 3, fontWeight: 500, color: "rgba(201,168,76,0.5)" }}>€</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: isMobile ? 40 : 48, fontWeight: 900, color: C.gold, lineHeight: 1, letterSpacing: -1 }}>
+                    {parseFloat(selected.Precio || 0).toFixed(2)}<span style={{ fontSize: 18, marginLeft: 3, fontWeight: 500, color: "rgba(201,168,76,0.5)" }}>€</span>
+                  </div>
+                  {!isConsignment && stock > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+                        Stock: <span style={{ color: stock <= 3 ? "#f59e0b" : "#4ade80", fontWeight: 700 }}>{stock}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <button onClick={() => {
+                          const cur = cart.find(c => c.id === selected._id);
+                          const curQty = cur ? cur.qty : 0;
+                          if (curQty > 1) changeQty(selected._id, -1);
+                          else if (curQty === 1) removeFromCart(selected._id);
+                        }} style={{ width: 30, height: 30, background: "#1a1a1a", border: "1px solid #333", borderRadius: 6, color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>−</button>
+                        <span style={{ color: C.white, fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: "center" }}>
+                          {cart.find(c => c.id === selected._id)?.qty || 0}
+                        </span>
+                        <button onClick={e => {
+                          const cur = cart.find(c => c.id === selected._id);
+                          const curQty = cur ? cur.qty : 0;
+                          if (curQty < stock) addToCart(selected._id, e);
+                        }} style={{ width: 30, height: 30, background: C.red, border: "none", borderRadius: 6, color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>+</button>
+                      </div>
+                    </div>
+                  )}
+                  {!isConsignment && stock === 0 && (
+                    <span style={{ color: "#555", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Out of stock</span>
+                  )}
                 </div>
               </div>
 
@@ -740,7 +768,7 @@ export default function App() {
                     style={{ width: "100%", background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "14px 24px", fontSize: 13, fontWeight: 900, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3, marginBottom: 10, fontFamily: "inherit", boxShadow: "0 4px 20px rgba(204,0,0,0.35)" }}>
                     Reserve Interest
                   </button>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20, color: "#444", fontSize: 11 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20, color: "#666", fontSize: 13 }}>
                     <span>🔒</span>
                     <span>No payment required</span>
                     <span style={{ color: "#2a2a2a" }}>·</span>
@@ -766,15 +794,15 @@ export default function App() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 28 }}>
                 {[["🌍","Secure worldwide shipping"],["📦","Premium collector packaging"],["✓","Verified collector network"],["⚡","Fast response time"]].map(([icon, text]) => (
                   <div key={text} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#0d0d0d", borderRadius: 8, border: "1px solid #1a1a1a" }}>
-                    <span style={{ fontSize: 14 }}>{icon}</span>
-                    <span style={{ color: "#555", fontSize: 10, lineHeight: 1.4 }}>{text}</span>
+                    <span style={{ fontSize: 16 }}>{icon}</span>
+                    <span style={{ color: "#666", fontSize: 12, lineHeight: 1.4 }}>{text}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Technical data */}
+              {/* Technical data — centered labels and values */}
               <div style={{ borderTop: "1px solid #141414", paddingTop: 20 }}>
-                <div style={{ color: "#2a2a2a", fontSize: 9, textTransform: "uppercase", letterSpacing: 3, marginBottom: 14 }}>Card Details</div>
+                <div style={{ color: "#2a2a2a", fontSize: 9, textTransform: "uppercase", letterSpacing: 3, marginBottom: 14, textAlign: "center" }}>Card Details</div>
                 {[
                   ["Driver", selected.Piloto, false],
                   ["Team", selected.Equipo, false],
@@ -808,9 +836,9 @@ export default function App() {
           {/* You may also like */}
           {similar.length > 0 && (
             <div style={{ marginTop: 72, paddingTop: 48, borderTop: "1px solid #111" }}>
-              <div style={{ color: "#333", fontSize: 10, textTransform: "uppercase", letterSpacing: 3, marginBottom: 6 }}>From the collection</div>
-              <h2 style={{ color: C.white, fontSize: isMobile ? 18 : 22, fontWeight: 800, marginBottom: 24, letterSpacing: -0.3 }}>You may also like</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(" + (isMobile ? 160 : 200) + "px, 1fr))", gap: 14 }}>
+              <div style={{ color: "#333", fontSize: 10, textTransform: "uppercase", letterSpacing: 3, marginBottom: 6, textAlign: "center" }}>From the collection</div>
+              <h2 style={{ color: C.white, fontSize: isMobile ? 18 : 22, fontWeight: 800, marginBottom: 24, letterSpacing: -0.3, textAlign: "center" }}>You may also like</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(" + (isMobile ? 160 : 200) + "px, 1fr))", gap: 14, justifyContent: "center" }}>
                 {similar.map(p => <ProductCard key={p._id} p={p} />)}
               </div>
             </div>
