@@ -91,6 +91,10 @@ export default function App() {
   const [zoomImg, setZoomImg] = useState(null);
   const [activeImg, setActiveImg] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [photoCard, setPhotoCard] = useState(null);
+  const [photoUploading, setPhotoUploading] = useState([false, false, false]);
+  const [photoUrls, setPhotoUrls] = useState(["", "", ""]);
+  const [photoDone, setPhotoDone] = useState([false, false, false]);
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -862,13 +866,8 @@ export default function App() {
   );
 
   const PhotoUploadTab = () => {
-    const [selectedCard, setSelectedCard] = useState(null);
-    const [uploading, setUploading] = useState([false, false, false]);
-    const [urls, setUrls] = useState(["", "", ""]);
-    const [uploadDone, setUploadDone] = useState([false, false, false]);
-
     const uploadToCloudinary = async (file, index) => {
-      setUploading(prev => { const n = [...prev]; n[index] = true; return n; });
+      setPhotoUploading(prev => { const n = [...prev]; n[index] = true; return n; });
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -877,17 +876,15 @@ export default function App() {
         const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData });
         const data = await res.json();
         if (data.secure_url) {
-          setUrls(prev => { const n = [...prev]; n[index] = data.secure_url; return n; });
-          setUploadDone(prev => { const n = [...prev]; n[index] = true; return n; });
-          // Auto-save to Google Sheets
-          const photoData = { id: selectedCard.ID, action: "photo" };
+          setPhotoUrls(prev => { const n = [...prev]; n[index] = data.secure_url; return n; });
+          setPhotoDone(prev => { const n = [...prev]; n[index] = true; return n; });
+          const photoData = { id: photoCard.ID, action: "photo" };
           if (index === 0) photoData.img1 = data.secure_url;
           if (index === 1) photoData.img2 = data.secure_url;
           if (index === 2) photoData.img3 = data.secure_url;
           try { await fetch(STOCK_API, { method: "POST", body: JSON.stringify(photoData) }); } catch(e) {}
-          // Update local product state
           setProducts(prev => prev.map(p => {
-            if (p._id === selectedCard._id) {
+            if (p._id === photoCard._id) {
               const updated = { ...p };
               if (index === 0) updated.Imagen_URL = data.secure_url;
               if (index === 1) updated.Imagen2_URL = data.secure_url;
@@ -897,20 +894,12 @@ export default function App() {
             return p;
           }));
         } else {
-          alert("Upload failed. Check Cloudinary upload preset is set to 'unsigned'.");
+          alert("Upload failed. Check Cloudinary upload preset is set to unsigned.");
         }
       } catch (e) {
         alert("Upload error: " + e.message);
       }
-      setUploading(prev => { const n = [...prev]; n[index] = false; return n; });
-    };
-
-    const copyUrl = (url, index) => {
-      navigator.clipboard.writeText(url);
-      const newCopied = [...copied];
-      newCopied[index] = true;
-      setCopied(newCopied);
-      setTimeout(() => { const nc = [...copied]; nc[index] = false; setCopied(nc); }, 2000);
+      setPhotoUploading(prev => { const n = [...prev]; n[index] = false; return n; });
     };
 
     return (
@@ -918,28 +907,34 @@ export default function App() {
         <div style={{ marginBottom: 24 }}>
           <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Upload Card Photos</div>
           <p style={{ color: "#555", fontSize: 13, lineHeight: 1.7 }}>
-            Upload up to 3 photos per card to Cloudinary. Copy the URL and paste it in Google Sheets columns <strong style={{ color: C.white }}>Imagen_URL</strong>, <strong style={{ color: C.white }}>Imagen2_URL</strong>, <strong style={{ color: C.white }}>Imagen3_URL</strong>.
+            Select a card and upload up to 3 photos. They save automatically to Google Sheets.
           </p>
         </div>
 
         {/* Card selector */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: "#555", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Select Card</label>
-          <select onChange={e => { const p = products.find(x => x._id === parseInt(e.target.value)); setSelectedCard(p); setUrls(["","",""]); setUploadDone([false,false,false]); }}
+          <select onChange={e => {
+            const p = products.find(x => x._id === parseInt(e.target.value));
+            setPhotoCard(p || null);
+            setPhotoUrls(["", "", ""]);
+            setPhotoDone([false, false, false]);
+          }}
+            value={photoCard ? photoCard._id : ""}
             style={{ width: "100%", padding: "12px 14px", border: "1px solid #2a2a2a", borderRadius: 8, fontSize: 13, background: "#0d0d0d", color: C.white, fontFamily: "inherit", outline: "none" }}>
             <option value="">-- Select a card --</option>
             {products.map(p => <option key={p._id} value={p._id}>{p.Nombre} — {p.Piloto}</option>)}
           </select>
         </div>
 
-        {selectedCard && (
+        {photoCard && (
           <div>
             {/* Current photos */}
-            {(selectedCard.Imagen_URL || selectedCard.Imagen2_URL || selectedCard.Imagen3_URL) && (
+            {(photoCard.Imagen_URL || photoCard.Imagen2_URL || photoCard.Imagen3_URL) && (
               <div style={{ marginBottom: 24 }}>
                 <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>Current photos</div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  {[selectedCard.Imagen_URL, selectedCard.Imagen2_URL, selectedCard.Imagen3_URL].filter(Boolean).map((url, i) => (
+                  {[photoCard.Imagen_URL, photoCard.Imagen2_URL, photoCard.Imagen3_URL].filter(Boolean).map((url, i) => (
                     <div key={i} style={{ width: 80, height: 100, background: "#0a0a0a", borderRadius: 8, overflow: "hidden", border: "1px solid #1e1e1e" }}>
                       <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 4 }} />
                     </div>
@@ -953,27 +948,21 @@ export default function App() {
               {["Photo 1 (Main)", "Photo 2", "Photo 3"].map((label, i) => (
                 <div key={i} style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: 12, padding: 16 }}>
                   <div style={{ color: "#555", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>{label}</div>
-
-                  {/* Preview */}
-                  {urls[i] ? (
+                  {photoUrls[i] ? (
                     <div style={{ width: "100%", paddingTop: "100%", position: "relative", marginBottom: 10, background: "#0a0a0a", borderRadius: 8, overflow: "hidden" }}>
-                      <img src={urls[i]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", padding: 8 }} />
+                      <img src={photoUrls[i]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", padding: 8 }} />
                     </div>
                   ) : (
-                    <div style={{ width: "100%", paddingTop: "80%", position: "relative", marginBottom: 10, background: "#111", borderRadius: 8, border: "2px dashed #222", display: "flex" }}>
+                    <div style={{ width: "100%", paddingTop: "80%", position: "relative", marginBottom: 10, background: "#111", borderRadius: 8, border: "2px dashed #222" }}>
                       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#333", fontSize: 28 }}>📷</div>
                     </div>
                   )}
-
-                  {/* Upload button */}
-                  <label style={{ display: "block", width: "100%", background: uploading[i] ? "#222" : "#1a1a1a", border: "1px solid #333", borderRadius: 8, padding: "10px", fontSize: 12, fontWeight: 700, cursor: uploading[i] ? "default" : "pointer", textAlign: "center", color: uploading[i] ? "#555" : C.white, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
-                    {uploading[i] ? "Uploading..." : uploadDone[i] ? "✓ Uploaded" : "Choose Photo"}
-                    <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploading[i]}
+                  <label style={{ display: "block", width: "100%", background: photoUploading[i] ? "#222" : "#1a1a1a", border: "1px solid #333", borderRadius: 8, padding: "10px", fontSize: 12, fontWeight: 700, cursor: photoUploading[i] ? "default" : "pointer", textAlign: "center", color: photoUploading[i] ? "#555" : C.white, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, boxSizing: "border-box" }}>
+                    {photoUploading[i] ? "Uploading..." : photoDone[i] ? "✓ Change photo" : "Choose Photo"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} disabled={photoUploading[i]}
                       onChange={e => { if (e.target.files[0]) uploadToCloudinary(e.target.files[0], i); }} />
                   </label>
-
-                  {/* URL + saved confirmation */}
-                  {urls[i] && (
+                  {photoDone[i] && (
                     <div style={{ background: "#0a0f0a", border: "1px solid #14532d", borderRadius: 6, padding: "8px 10px", fontSize: 11, color: "#4ade80", textAlign: "center", fontWeight: 700 }}>
                       ✓ Saved to Google Sheets
                     </div>
@@ -982,11 +971,10 @@ export default function App() {
               ))}
             </div>
 
-            {/* Instructions */}
             <div style={{ marginTop: 20, background: "rgba(20,83,45,0.15)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 8, padding: "14px 16px" }}>
               <div style={{ color: "#4ade80", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>✓ Automatic</div>
               <p style={{ color: "#666", fontSize: 12, lineHeight: 1.7, margin: 0 }}>
-                Photos upload to Cloudinary and save automatically to Google Sheets. The card will show the new photos after the next page refresh.
+                Photos upload to Cloudinary and save automatically to Google Sheets.
               </p>
             </div>
           </div>
