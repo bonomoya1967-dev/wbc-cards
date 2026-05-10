@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+ import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -893,8 +893,6 @@ export default function App() {
       ["Destacada", "Featured", "select", ["","TRUE"]],
       ["Nueva_Llegada", "New Arrival", "select", ["","TRUE"]],
       ["Consignment", "Consignment", "select", ["","TRUE"]],
-      ["Cardmarket_URL", "Cardmarket URL", "text"],
-      ["eBay_URL", "eBay URL", "text"],
       ["PSA_Poblacion", "PSA Population", "text"],
     ];
 
@@ -1032,10 +1030,10 @@ export default function App() {
             {/* Card fields */}
             <div style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: 12, padding: 20, marginBottom: 16 }}>
               <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>Card Details</div>
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
                 {CARD_FIELDS.map(([key, label, type, options]) => (
                   <div key={key}>
-                    <label style={{ fontSize: 10, fontWeight: 700, color: "#555", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</label>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: C.gold, display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 1 }}>{label}</label>
                     {type === "select" ? (
                       <select style={inp3} value={editData[key] || ""} onChange={e => setEditData(d => ({ ...d, [key]: e.target.value }))}>
                         {options.map(o => <option key={o} value={o}>{o || "—"}</option>)}
