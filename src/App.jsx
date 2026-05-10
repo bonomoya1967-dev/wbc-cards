@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const SHEET_URL = "https://opensheet.elk.sh/18pEEgSp4mZ0x6vdd5N8gNuwcJTh_cZXV7kSSQwDT-gg/wbccards";
 const ADMIN_EMAIL = "info@wbccards.com";
@@ -866,6 +866,78 @@ export default function App() {
   );
 
   const PhotoUploadTab = () => {
+    const [editData, setEditData] = useState({});
+    const [saving, setSaving] = useState(false);
+    const [savedOk, setSavedOk] = useState(false);
+    const [isNew, setIsNew] = useState(false);
+
+    const CARD_FIELDS = [
+      ["Nombre", "Card Name", "text"],
+      ["Piloto", "Driver", "text"],
+      ["Equipo", "Team", "text"],
+      ["Año", "Year", "text"],
+      ["Serie", "Series", "select", ["Topps Chrome F1","Topps Sapphire F1","Topps Dynasty","Turbo Attax"]],
+      ["Subset", "Subset", "text"],
+      ["Paralela", "Parallel", "text"],
+      ["Numeracion", "Numbered", "text"],
+      ["Precio", "Price (€)", "text"],
+      ["Stock", "Stock", "text"],
+      ["Estado", "Condition", "select", ["Mint","Near Mint","Excellent","Good"]],
+      ["Auto", "Autograph", "select", ["FALSE","TRUE"]],
+      ["Relic", "Relic", "select", ["FALSE","TRUE"]],
+      ["Grading", "Grading", "select", ["FALSE","TRUE"]],
+      ["Empresa_Grading", "Grading Company", "select", ["","PSA","BGS","SGC"]],
+      ["Nota_Grading", "Grade", "text"],
+      ["Rareza", "Rarity", "select", ["Common","Rare","Ultra Rare","Auto","Patch","Relic","1/1","SSP"]],
+      ["Activa", "Active", "select", ["TRUE","FALSE"]],
+      ["Destacada", "Featured", "select", ["","TRUE"]],
+      ["Nueva_Llegada", "New Arrival", "select", ["","TRUE"]],
+      ["Consignment", "Consignment", "select", ["","TRUE"]],
+      ["Cardmarket_URL", "Cardmarket URL", "text"],
+      ["eBay_URL", "eBay URL", "text"],
+      ["PSA_Poblacion", "PSA Population", "text"],
+    ];
+
+    const selectCard = (p) => {
+      setPhotoCard(p || null);
+      setEditData(p ? { ...p } : {});
+      setPhotoUrls(["", "", ""]);
+      setPhotoDone([false, false, false]);
+      setSavedOk(false);
+      setIsNew(false);
+    };
+
+    const newCard = () => {
+      setPhotoCard({ _id: "new", Nombre: "", Piloto: "", Equipo: "" });
+      setEditData({ Activa: "TRUE", Auto: "FALSE", Relic: "FALSE", Grading: "FALSE" });
+      setPhotoUrls(["", "", ""]);
+      setPhotoDone([false, false, false]);
+      setSavedOk(false);
+      setIsNew(true);
+    };
+
+    const saveCard = async () => {
+      setSaving(true);
+      try {
+        const payload = { action: isNew ? "create" : "update", id: editData.ID, fields: editData };
+        await fetch(STOCK_API, { method: "POST", body: JSON.stringify(payload) });
+        setSavedOk(true);
+        setTimeout(() => setSavedOk(false), 3000);
+        if (!isNew) {
+          setProducts(prev => prev.map(p => p.ID === editData.ID ? { ...p, ...editData } : p));
+        }
+      } catch(e) {}
+      setSaving(false);
+    };
+
+    const deactivateCard = async () => {
+      if (!window.confirm("Mark this card as inactive?")) return;
+      const payload = { action: "update", id: editData.ID, fields: { ...editData, Activa: "FALSE" } };
+      try { await fetch(STOCK_API, { method: "POST", body: JSON.stringify(payload) }); } catch(e) {}
+      setEditData(d => ({ ...d, Activa: "FALSE" }));
+      setProducts(prev => prev.map(p => p.ID === editData.ID ? { ...p, Activa: "FALSE" } : p));
+    };
+
     const uploadToCloudinary = async (file, index) => {
       setPhotoUploading(prev => { const n = [...prev]; n[index] = true; return n; });
       try {
@@ -878,6 +950,8 @@ export default function App() {
         if (data.secure_url) {
           setPhotoUrls(prev => { const n = [...prev]; n[index] = data.secure_url; return n; });
           setPhotoDone(prev => { const n = [...prev]; n[index] = true; return n; });
+          const key = index === 0 ? "Imagen_URL" : index === 1 ? "Imagen2_URL" : "Imagen3_URL";
+          setEditData(d => ({ ...d, [key]: data.secure_url }));
           const photoData = { id: photoCard.ID, action: "photo" };
           if (index === 0) photoData.img1 = data.secure_url;
           if (index === 1) photoData.img2 = data.secure_url;
@@ -902,87 +976,102 @@ export default function App() {
       setPhotoUploading(prev => { const n = [...prev]; n[index] = false; return n; });
     };
 
+    const inp3 = { width: "100%", padding: "9px 12px", border: "1px solid #2a2a2a", borderRadius: 6, fontSize: 13, background: "#0d0d0d", color: C.white, fontFamily: "inherit", outline: "none" };
+
     return (
       <div>
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase", marginBottom: 8 }}>Upload Card Photos</div>
-          <p style={{ color: "#555", fontSize: 13, lineHeight: 1.7 }}>
-            Select a card and upload up to 3 photos. They save automatically to Google Sheets.
-          </p>
+        {/* Header + New card button */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase" }}>Card Manager</div>
+          <button onClick={newCard}
+            style={{ background: C.gold, color: C.black, border: "none", borderRadius: 6, padding: "8px 16px", fontSize: 11, fontWeight: 900, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>
+            + New Card
+          </button>
         </div>
 
         {/* Card selector */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: "#555", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Select Card</label>
-          <select onChange={e => {
-            const p = products.find(x => x._id === parseInt(e.target.value));
-            setPhotoCard(p || null);
-            setPhotoUrls(["", "", ""]);
-            setPhotoDone([false, false, false]);
-          }}
-            value={photoCard ? photoCard._id : ""}
+          <select onChange={e => { const p = products.find(x => x._id === parseInt(e.target.value)); selectCard(p); }}
+            value={photoCard && !isNew ? photoCard._id : ""}
             style={{ width: "100%", padding: "12px 14px", border: "1px solid #2a2a2a", borderRadius: 8, fontSize: 13, background: "#0d0d0d", color: C.white, fontFamily: "inherit", outline: "none" }}>
             <option value="">-- Select a card --</option>
-            {products.map(p => <option key={p._id} value={p._id}>{p.Nombre} — {p.Piloto}</option>)}
+            {products.map(p => <option key={p._id} value={p._id}>{p.Nombre} — {p.Piloto} {p.Activa === "FALSE" ? "(inactive)" : ""}</option>)}
           </select>
         </div>
 
         {photoCard && (
           <div>
-            {/* Current photos */}
-            {(photoCard.Imagen_URL || photoCard.Imagen2_URL || photoCard.Imagen3_URL) && (
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>Current photos</div>
-                <div style={{ display: "flex", gap: 10 }}>
-                  {[photoCard.Imagen_URL, photoCard.Imagen2_URL, photoCard.Imagen3_URL].filter(Boolean).map((url, i) => (
-                    <div key={i} style={{ width: 80, height: 100, background: "#0a0a0a", borderRadius: 8, overflow: "hidden", border: "1px solid #1e1e1e" }}>
-                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 4 }} />
-                    </div>
-                  ))}
-                </div>
+            {/* Photo upload */}
+            <div style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: 12, padding: 16, marginBottom: 24 }}>
+              <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 12 }}>Photos</div>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 12 }}>
+                {["Photo 1 (Main)", "Photo 2", "Photo 3"].map((label, i) => (
+                  <div key={i} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 10, padding: 12 }}>
+                    <div style={{ color: "#555", fontSize: 9, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>{label}</div>
+                    {(photoUrls[i] || [editData.Imagen_URL, editData.Imagen2_URL, editData.Imagen3_URL][i]) ? (
+                      <div style={{ width: "100%", paddingTop: "90%", position: "relative", marginBottom: 8, background: "#0a0a0a", borderRadius: 6, overflow: "hidden" }}>
+                        <img src={photoUrls[i] || [editData.Imagen_URL, editData.Imagen2_URL, editData.Imagen3_URL][i]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", padding: 6 }} />
+                      </div>
+                    ) : (
+                      <div style={{ width: "100%", paddingTop: "70%", position: "relative", marginBottom: 8, background: "#0a0a0a", borderRadius: 6, border: "2px dashed #222" }}>
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#333", fontSize: 24 }}>📷</div>
+                      </div>
+                    )}
+                    <label style={{ display: "block", width: "100%", background: photoUploading[i] ? "#1a1a1a" : "#222", border: "1px solid #333", borderRadius: 6, padding: "8px", fontSize: 11, fontWeight: 700, cursor: photoUploading[i] ? "default" : "pointer", textAlign: "center", color: photoUploading[i] ? "#555" : C.white, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      {photoUploading[i] ? "Uploading..." : photoDone[i] ? "✓ Change" : "Upload"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} disabled={photoUploading[i]}
+                        onChange={e => { if (e.target.files[0]) uploadToCloudinary(e.target.files[0], i); }} />
+                    </label>
+                    {photoDone[i] && <div style={{ marginTop: 6, fontSize: 10, color: "#4ade80", textAlign: "center" }}>✓ Saved</div>}
+                  </div>
+                ))}
               </div>
-            )}
-
-            {/* Upload slots */}
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
-              {["Photo 1 (Main)", "Photo 2", "Photo 3"].map((label, i) => (
-                <div key={i} style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: 12, padding: 16 }}>
-                  <div style={{ color: "#555", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>{label}</div>
-                  {photoUrls[i] ? (
-                    <div style={{ width: "100%", paddingTop: "100%", position: "relative", marginBottom: 10, background: "#0a0a0a", borderRadius: 8, overflow: "hidden" }}>
-                      <img src={photoUrls[i]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", padding: 8 }} />
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%", paddingTop: "80%", position: "relative", marginBottom: 10, background: "#111", borderRadius: 8, border: "2px dashed #222" }}>
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#333", fontSize: 28 }}>📷</div>
-                    </div>
-                  )}
-                  <label style={{ display: "block", width: "100%", background: photoUploading[i] ? "#222" : "#1a1a1a", border: "1px solid #333", borderRadius: 8, padding: "10px", fontSize: 12, fontWeight: 700, cursor: photoUploading[i] ? "default" : "pointer", textAlign: "center", color: photoUploading[i] ? "#555" : C.white, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, boxSizing: "border-box" }}>
-                    {photoUploading[i] ? "Uploading..." : photoDone[i] ? "✓ Change photo" : "Choose Photo"}
-                    <input type="file" accept="image/*" style={{ display: "none" }} disabled={photoUploading[i]}
-                      onChange={e => { if (e.target.files[0]) uploadToCloudinary(e.target.files[0], i); }} />
-                  </label>
-                  {photoDone[i] && (
-                    <div style={{ background: "#0a0f0a", border: "1px solid #14532d", borderRadius: 6, padding: "8px 10px", fontSize: 11, color: "#4ade80", textAlign: "center", fontWeight: 700 }}>
-                      ✓ Saved to Google Sheets
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
 
-            <div style={{ marginTop: 20, background: "rgba(20,83,45,0.15)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 8, padding: "14px 16px" }}>
-              <div style={{ color: "#4ade80", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>✓ Automatic</div>
-              <p style={{ color: "#666", fontSize: 12, lineHeight: 1.7, margin: 0 }}>
-                Photos upload to Cloudinary and save automatically to Google Sheets.
-              </p>
+            {/* Card fields */}
+            <div style={{ background: "#0d0d0d", border: "1px solid #1e1e1e", borderRadius: 12, padding: 20, marginBottom: 16 }}>
+              <div style={{ color: "#444", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>Card Details</div>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+                {CARD_FIELDS.map(([key, label, type, options]) => (
+                  <div key={key}>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#555", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</label>
+                    {type === "select" ? (
+                      <select style={inp3} value={editData[key] || ""} onChange={e => setEditData(d => ({ ...d, [key]: e.target.value }))}>
+                        {options.map(o => <option key={o} value={o}>{o || "—"}</option>)}
+                      </select>
+                    ) : (
+                      <input style={inp3} type="text" value={editData[key] || ""} onChange={e => setEditData(d => ({ ...d, [key]: e.target.value }))} placeholder={label} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={saveCard} disabled={saving}
+                style={{ flex: 2, background: savedOk ? "#14532d" : C.red, color: "#fff", border: "none", borderRadius: 8, padding: "13px", fontSize: 13, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1, fontFamily: "inherit" }}>
+                {saving ? "Saving..." : savedOk ? "✓ Saved!" : isNew ? "Create Card" : "Save Changes"}
+              </button>
+              {!isNew && editData.Activa !== "FALSE" && (
+                <button onClick={deactivateCard}
+                  style={{ flex: 1, background: "#1e0000", color: "#f87171", border: "1px solid #7f1d1d", borderRadius: 8, padding: "13px", fontSize: 12, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", fontFamily: "inherit" }}>
+                  Deactivate
+                </button>
+              )}
+              {!isNew && editData.Activa === "FALSE" && (
+                <button onClick={() => { setEditData(d => ({ ...d, Activa: "TRUE" })); }}
+                  style={{ flex: 1, background: "#14532d", color: "#4ade80", border: "1px solid #16a34a", borderRadius: 8, padding: "13px", fontSize: 12, fontWeight: 700, cursor: "pointer", textTransform: "uppercase", fontFamily: "inherit" }}>
+                  Reactivate
+                </button>
+              )}
             </div>
           </div>
         )}
       </div>
     );
   };
-
   const AdminScreen = () => (
     <div style={{ paddingTop: 64, maxWidth: 1200, margin: "0 auto", padding: "80px 20px 60px" }}>
       <h1 style={{ color: C.white, fontSize: 24, fontWeight: 900, marginBottom: 24, textTransform: "uppercase", letterSpacing: 2 }}>Admin Panel</h1>
