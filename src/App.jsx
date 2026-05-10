@@ -644,9 +644,9 @@ export default function App() {
           {/* Main grid: thumbnails | image | info */}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "80px 1fr 1fr", gap: isMobile ? 20 : 24, alignItems: "start" }}>
 
-            {/* COL 1 — Thumbnails vertical — aligned to center */}
+            {/* COL 1 — Thumbnails vertical — aligned to top */}
             {!isMobile && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: "25%" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 0 }}>
                 {imgs.map((img, i) => (
                   <div key={i} onClick={() => setActiveImg(i)}
                     style={{ width: 72, height: 90, background: "#0d0d0d", borderRadius: 8, overflow: "hidden", cursor: "pointer", border: "1px solid " + (activeImg === i ? C.gold : "rgba(255,255,255,0.06)"), opacity: activeImg === i ? 1 : 0.4, transition: "all 0.2s", padding: 4 }}>
@@ -656,10 +656,10 @@ export default function App() {
               </div>
             )}
 
-            {/* COL 2 — Main image */}
-            <div>
-              <div style={{ background: "radial-gradient(ellipse at 50% 40%, #1e1e1e 0%, #0a0a0a 80%)", borderRadius: 14, overflow: "hidden", position: "relative", paddingTop: "130%", boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)" }}>
-                <div style={{ position: "absolute", inset: "5%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {/* COL 2 — Main image — aligned top */}
+            <div style={{ alignSelf: "start" }}>
+              <div style={{ background: "radial-gradient(ellipse at 50% 30%, #1e1e1e 0%, #0a0a0a 80%)", borderRadius: 14, overflow: "hidden", position: "relative", paddingTop: "130%", boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)" }}>
+                <div style={{ position: "absolute", inset: "4%", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "4%" }}>
                   {imgs[activeImg]
                     ? <img src={imgs[activeImg]} alt={selected.Nombre} style={{ maxWidth: "95%", maxHeight: "95%", objectFit: "contain", filter: "drop-shadow(0 10px 28px rgba(0,0,0,0.7))" }} />
                     : <div style={{ color: "#1a1a1a", fontSize: 48 }}>🏎</div>}
@@ -886,6 +886,25 @@ export default function App() {
           const newDone = [...uploadDone];
           newDone[index] = true;
           setUploadDone(newDone);
+          // Auto-save to Google Sheets
+          const photoData = { id: selectedCard.ID, action: "photo" };
+          if (index === 0) photoData.img1 = data.secure_url;
+          if (index === 1) photoData.img2 = data.secure_url;
+          if (index === 2) photoData.img3 = data.secure_url;
+          try {
+            await fetch(STOCK_API, { method: "POST", body: JSON.stringify(photoData) });
+          } catch(e) {}
+          // Update local state
+          setProducts(prev => prev.map(p => {
+            if (p._id === selectedCard._id) {
+              const updated = { ...p };
+              if (index === 0) updated.Imagen_URL = data.secure_url;
+              if (index === 1) updated.Imagen2_URL = data.secure_url;
+              if (index === 2) updated.Imagen3_URL = data.secure_url;
+              return updated;
+            }
+            return p;
+          }));
         } else {
           alert("Upload failed. Check Cloudinary upload preset is set to 'unsigned'.");
         }
@@ -964,14 +983,10 @@ export default function App() {
                       onChange={e => { if (e.target.files[0]) uploadToCloudinary(e.target.files[0], i); }} />
                   </label>
 
-                  {/* URL + copy */}
+                  {/* URL + saved confirmation */}
                   {urls[i] && (
-                    <div>
-                      <div style={{ background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#555", wordBreak: "break-all", marginBottom: 6 }}>{urls[i].slice(0, 50)}...</div>
-                      <button onClick={() => copyUrl(urls[i], i)}
-                        style={{ width: "100%", background: copied[i] ? "#14532d" : C.gold, color: copied[i] ? "#4ade80" : C.black, border: "none", borderRadius: 6, padding: "8px", fontSize: 11, fontWeight: 800, cursor: "pointer", textTransform: "uppercase", letterSpacing: 1 }}>
-                        {copied[i] ? "✓ Copied!" : "Copy URL"}
-                      </button>
+                    <div style={{ background: "#0a0f0a", border: "1px solid #14532d", borderRadius: 6, padding: "8px 10px", fontSize: 11, color: "#4ade80", textAlign: "center", fontWeight: 700 }}>
+                      ✓ Saved to Google Sheets
                     </div>
                   )}
                 </div>
@@ -979,10 +994,10 @@ export default function App() {
             </div>
 
             {/* Instructions */}
-            <div style={{ marginTop: 20, background: "rgba(201,168,76,0.05)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 8, padding: "14px 16px" }}>
-              <div style={{ color: C.gold, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Next step</div>
+            <div style={{ marginTop: 20, background: "rgba(20,83,45,0.15)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ color: "#4ade80", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>✓ Automatic</div>
               <p style={{ color: "#666", fontSize: 12, lineHeight: 1.7, margin: 0 }}>
-                Copy each URL → open Google Sheets → find <strong style={{ color: "#888" }}>{selectedCard.Nombre}</strong> → paste in <strong style={{ color: "#888" }}>Imagen_URL</strong>, <strong style={{ color: "#888" }}>Imagen2_URL</strong>, <strong style={{ color: "#888" }}>Imagen3_URL</strong> columns.
+                Photos upload to Cloudinary and save automatically to Google Sheets. The card will show the new photos after the next page refresh.
               </p>
             </div>
           </div>
