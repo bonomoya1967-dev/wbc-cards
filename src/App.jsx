@@ -865,13 +865,10 @@ export default function App() {
     const [selectedCard, setSelectedCard] = useState(null);
     const [uploading, setUploading] = useState([false, false, false]);
     const [urls, setUrls] = useState(["", "", ""]);
-    const [copied, setCopied] = useState([false, false, false]);
     const [uploadDone, setUploadDone] = useState([false, false, false]);
 
     const uploadToCloudinary = async (file, index) => {
-      const newUploading = [...uploading];
-      newUploading[index] = true;
-      setUploading(newUploading);
+      setUploading(prev => { const n = [...prev]; n[index] = true; return n; });
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -880,21 +877,15 @@ export default function App() {
         const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData });
         const data = await res.json();
         if (data.secure_url) {
-          const newUrls = [...urls];
-          newUrls[index] = data.secure_url;
-          setUrls(newUrls);
-          const newDone = [...uploadDone];
-          newDone[index] = true;
-          setUploadDone(newDone);
+          setUrls(prev => { const n = [...prev]; n[index] = data.secure_url; return n; });
+          setUploadDone(prev => { const n = [...prev]; n[index] = true; return n; });
           // Auto-save to Google Sheets
           const photoData = { id: selectedCard.ID, action: "photo" };
           if (index === 0) photoData.img1 = data.secure_url;
           if (index === 1) photoData.img2 = data.secure_url;
           if (index === 2) photoData.img3 = data.secure_url;
-          try {
-            await fetch(STOCK_API, { method: "POST", body: JSON.stringify(photoData) });
-          } catch(e) {}
-          // Update local state
+          try { await fetch(STOCK_API, { method: "POST", body: JSON.stringify(photoData) }); } catch(e) {}
+          // Update local product state
           setProducts(prev => prev.map(p => {
             if (p._id === selectedCard._id) {
               const updated = { ...p };
@@ -911,9 +902,7 @@ export default function App() {
       } catch (e) {
         alert("Upload error: " + e.message);
       }
-      const newUploading2 = [...uploading];
-      newUploading2[index] = false;
-      setUploading(newUploading2);
+      setUploading(prev => { const n = [...prev]; n[index] = false; return n; });
     };
 
     const copyUrl = (url, index) => {
