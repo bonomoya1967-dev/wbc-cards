@@ -25,6 +25,11 @@
     a.btn:hover, a.btn:focus-visible { border-color:var(--gold); transform:translateY(-1px); outline:none; }
     a.btn.primary { background:var(--gold); color:#111; border-color:var(--gold); font-size:18px; padding:18px 20px; }
     a.btn small { display:block; font-weight:400; font-size:13px; opacity:.75; margin-top:3px; }
+    .events { margin-top:28px; display:none; }
+    .events h2 { font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; font-weight:700; }
+    .events a.btn { border-color:var(--gold); display:flex; justify-content:space-between; align-items:center; text-align:left; gap:12px; margin-top:10px; }
+    .events a.btn .d { background:var(--gold); color:#111; border-radius:6px; padding:4px 9px; font-size:13px; white-space:nowrap; }
+    .events a.btn small { margin-top:2px; }
     .trust { margin-top:32px; display:flex; flex-wrap:wrap; justify-content:center; gap:8px 18px; color:var(--muted); font-size:14px; }
     .trust li { list-style:none; }
     .trust li::before { content:"✓ "; color:var(--gold); }
@@ -48,6 +53,12 @@
       <a class="btn" href="https://instagram.com/wbc_cards" target="_blank" rel="noopener">Instagram @wbc_cards</a>
     </nav>
 
+    <section class="events" id="events" aria-label="Próximos eventos">
+      <h2>Próximos eventos</h2>
+      <!-- Para añadir un evento: copia una línea <a> y cambia data-date (AAAA-MM-DD), nombre y fecha visible. Los eventos pasados se ocultan solos. -->
+      <a class="btn" data-date="2026-12-12" href="https://instagram.com/wbc_cards" target="_blank" rel="noopener"><span>Barcelona Card Show<small>Pokémon y One Piece · nos vemos allí</small></span><span class="d">12 dic</span></a>
+    </section>
+
     <ul class="trust">
       <li>Cartas en Near Mint o mejor</li>
       <li>Envíos desde Barcelona</li>
@@ -63,6 +74,6 @@
     Francisco Javier Bono Moya (WBC Cards) · NIF 52173832B · Passeig d'Amunt, 45, 08024 Barcelona, España<br />
     Cartas de coleccionismo no afiliadas a The Pokémon Company ni a Bandai. Todas las marcas pertenecen a sus propietarios.
   </footer>
-<script>var l=document.createElement("link");l.rel="icon";l.href=document.querySelector(".logo").src;document.head.appendChild(l);</script>
+<script>var l=document.createElement("link");l.rel="icon";l.href=document.querySelector(".logo").src;document.head.appendChild(l);var ev=document.getElementById("events");var hoy=new Date().toISOString().slice(0,10);var vis=0;ev.querySelectorAll("a[data-date]").forEach(function(a){if(a.getAttribute("data-date")<hoy){a.remove()}else{vis++}});if(vis>0){ev.style.display="block"}</script>
 </body>
 </html>
